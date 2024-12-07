@@ -19,5 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Project"
+rootProject.name = "gps"
 include(":app")
+ 
