@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -60,6 +61,8 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.1.1")
     implementation("androidx.compose.ui:ui:1.5.1")
     implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-analytics")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
