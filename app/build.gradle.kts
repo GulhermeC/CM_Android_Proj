@@ -1,21 +1,19 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.gps"
-    compileSdk = 35 // Update from 34 to 35
-
-
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.gps"
-        minSdk = 24
-        targetSdk = 34 // Optionally, update this to 35
+        targetSdk = 34
+        minSdk = 21
         versionCode = 1
         versionName = "1.0"
+
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -53,16 +51,9 @@ android {
 }
 
 dependencies {
-    implementation("androidx.compose.ui:ui:1.5.1") // Core Compose library
-    implementation("androidx.compose.foundation:foundation:1.5.1") // Basic UI components
-    implementation("androidx.activity:activity-compose:1.7.2") // Compose support for Activity
-    implementation("com.google.android.gms:play-services-location:21.0.1") // Location
-    implementation("androidx.compose.material3:material3:1.1.1")
-    implementation("androidx.compose.material3:material3:1.1.1")
-    implementation("androidx.compose.ui:ui:1.5.1")
     implementation("com.google.android.gms:play-services-location:21.0.1")
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
-    implementation("com.google.firebase:firebase-analytics")
+    implementation("org.osmdroid:osmdroid-android:6.1.11")
+    implementation("androidx.appcompat:appcompat:1.6.1")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
