@@ -7,6 +7,8 @@ android {
     namespace = "com.example.gps"
     compileSdk = 35
 
+
+
     defaultConfig {
         applicationId = "com.example.gps"
         targetSdk = 34
@@ -14,12 +16,13 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
     }
+
+
 
     buildTypes {
         release {
@@ -48,9 +51,13 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
 }
 
 dependencies {
+
+    implementation(libs.mapbox.maps)      // Mapbox core library
+    implementation(libs.constraintLayout)  // Use the alias from your libs.versions.toml
     implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation("org.osmdroid:osmdroid-android:6.1.11")
     implementation("androidx.appcompat:appcompat:1.6.1")

@@ -18,6 +18,26 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
+            credentials {
+                username = "ruiua"
+                password =
+                    "Da24680@%" // Replace with your token
+            }
+        }}}
+
+// settings.gradle.kts
+
+
+
+
+
+
 
 rootProject.name = "gps"
 include(":app")
