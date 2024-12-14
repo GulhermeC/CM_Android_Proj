@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">gps</string>
+    <string name="mapbox_access_token">sk.eyJ1IjoicnVpdWEiLCJhIjoiY200bXM4czU5MDBwZDJrcjJsZW9qNzVjOCJ9.TlDHWxGJe7rdI03udVud3w</string>
+
+</resources>
