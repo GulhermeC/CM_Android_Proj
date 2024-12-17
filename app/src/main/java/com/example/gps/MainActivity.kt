@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.mapbox.geojson.Point
@@ -14,7 +15,6 @@ import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.ResourceOptions
 import com.mapbox.maps.Style
 import com.mapbox.maps.plugin.locationcomponent.location
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,7 +38,24 @@ class MainActivity : AppCompatActivity() {
 
         // Programmatically initialize MapView
         mapView = MapView(this, mapInitOptions)
-        setContentView(mapView)
+
+        // Set up a ConstraintLayout to manage layout
+        val rootView = ConstraintLayout(this).apply {
+            id = ConstraintLayout.generateViewId()
+        }
+
+        // Add MapView to the layout
+        mapView.id = ConstraintLayout.generateViewId()
+        rootView.addView(mapView, ConstraintLayout.LayoutParams(0, 0).apply {
+            width = ConstraintLayout.LayoutParams.MATCH_CONSTRAINT
+            height = 400 // Fixed height for the map rectangle
+            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+            startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+        })
+
+        // Set the layout as the content view
+        setContentView(rootView)
 
         // Get MapboxMap from the MapView
         mapboxMap = mapView.getMapboxMap()
@@ -114,5 +131,3 @@ class MainActivity : AppCompatActivity() {
         mapView.onDestroy()
     }
 }
-
-
