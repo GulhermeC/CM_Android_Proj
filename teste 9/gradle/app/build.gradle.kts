@@ -7,8 +7,6 @@ android {
     namespace = "com.example.gps"
     compileSdk = 35
 
-
-
     defaultConfig {
         applicationId = "com.example.gps"
         targetSdk = 34
@@ -21,8 +19,6 @@ android {
             useSupportLibrary = true
         }
     }
-
-
 
     buildTypes {
         release {
@@ -55,9 +51,8 @@ android {
 }
 
 dependencies {
-
     implementation(libs.mapbox.maps)      // Mapbox core library
-    implementation(libs.constraintLayout) // Use the alias from your libs.versions.toml
+    implementation(libs.constraintLayout)  // Use the alias from your libs.versions.toml
     implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation("org.osmdroid:osmdroid-android:6.1.11")
     implementation("androidx.appcompat:appcompat:1.6.1")
