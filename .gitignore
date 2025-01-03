@@ -1,0 +1,30 @@
+# Built application files
+*.apk
+*.apks
+*.aab
+
+# Android Studio and Gradle files
+.gradle/
+build/
+.idea/
+*.iml
+local.properties
+*.keystore
+
+# Generated files
+/app/build/generated/
+/app/build/intermediates/
+/app/build/outputs/
+/app/build/tmp/
+
+# Local configuration files
+/app/src/debug/res/values/google_maps_api.xml
+/app/src/release/res/values/google_maps_api.xml
+/app/src/debug/res/values/secrets.xml
+/app/src/release/res/values/secrets.xml
+
+# Other files
+*.log
+*.swp
+*.swo
+.DS_Store

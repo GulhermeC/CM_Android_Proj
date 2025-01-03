@@ -1,6 +1,7 @@
 package com.example.gps
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
@@ -128,6 +129,7 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun initializeMap() {
         mapboxMap.loadStyleUri(Style.MAPBOX_STREETS) { style ->
             // Enable the LocationComponent for GPS tracking
@@ -155,9 +157,7 @@ class MainActivity : AppCompatActivity() {
                 if (event.action == android.view.MotionEvent.ACTION_UP) {
                     val screenPoint = ScreenCoordinate(event.x.toDouble(), event.y.toDouble())
                     val mapPoint = mapboxMap.coordinateForPixel(screenPoint)
-                    if (mapPoint != null) {
-                        createWaypoint(mapPoint)
-                    }
+                    createWaypoint(mapPoint)
                 }
                 false // Return false to allow further event processing
             }
@@ -253,16 +253,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("Lifecycle")
     override fun onStart() {
         super.onStart()
         mapView.onStart()
     }
 
+    @SuppressLint("Lifecycle")
     override fun onStop() {
         super.onStop()
         mapView.onStop()
     }
 
+    @SuppressLint("Lifecycle")
     override fun onDestroy() {
         super.onDestroy()
         mapView.onDestroy()
