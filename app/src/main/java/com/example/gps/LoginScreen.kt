@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit, context: Context) {
+fun LoginScreen(onLoginAttempt: (String, String) -> Unit, context: Context) {
     val username = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
 
@@ -40,7 +40,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, context: Context) {
             OutlinedTextField(
                 value = username.value,
                 onValueChange = { username.value = it },
-                label = { Text("Username") },
+                label = { Text("Email") },
                 singleLine = true
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -54,11 +54,12 @@ fun LoginScreen(onLoginSuccess: () -> Unit, context: Context) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = {
+                val emailInput = username.value.trim()
+                val passwordInput = password.value.trim()
                 // Here you would add your login logic
                 if (username.value.isNotBlank() && password.value.isNotBlank()) {
                     // Simulate successful login
-                    Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
-                    onLoginSuccess()
+                    onLoginAttempt(emailInput, passwordInput)
                 } else {
                     Toast.makeText(context, "Please enter username and password", Toast.LENGTH_SHORT).show()
                 }
@@ -73,5 +74,8 @@ fun LoginScreen(onLoginSuccess: () -> Unit, context: Context) {
 @Composable
 fun LoginScreenPreview() {
     val context = LocalContext.current
-    LoginScreen(onLoginSuccess = {}, context = context)
+    LoginScreen(
+        onLoginAttempt = { email, pass -> },
+        context = context
+    )
 }

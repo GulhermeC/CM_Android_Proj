@@ -522,7 +522,7 @@ public class LibrariesForLibsInPluginsBlock extends AbstractExternalDependencyFa
 
         /**
          * Dependency provider for <b>maps</b> with <b>com.mapbox.maps:android</b> coordinates and
-         * with version <b>10.11.0</b>
+         * with version <b>10.12.0</b>
          * <p>
          * This dependency was declared in catalog libs.versions.toml
          *

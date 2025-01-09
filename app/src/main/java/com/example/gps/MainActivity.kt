@@ -27,6 +27,10 @@ import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.locationcomponent.location
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.ktx.auth
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,6 +40,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var databaseHelper: WaypointDatabaseHelper
     private var waypointCounter = 1
 
+    private lateinit var auth: FirebaseAuth
+
     // Variables to store the latitude and longitude of the created waypoints
     private val waypointList = mutableListOf<Pair<Double, Double>>()
 
@@ -44,7 +50,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
+
+        FirebaseApp.initializeApp(this)
+
+        auth = Firebase.auth
 
         // Initialize MapInitOptions with the access token
         val mapInitOptions = MapInitOptions(
