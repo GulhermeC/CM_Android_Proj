@@ -17,6 +17,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -144,48 +152,66 @@ fun MapScreen() {
         }
     }
 
-    // UI Layout
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Map View
-        AndroidView(
-            factory = { mapView },
-            modifier = Modifier.fillMaxSize()
-        )
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Map View
+            AndroidView(
+                factory = { mapView },
+                modifier = Modifier.fillMaxSize()
+            )
 
-        // Control Buttons
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Button(
-                onClick = {
-                    pointAnnotationManager?.let {
-                        loadWaypoints(db, it, waypointList, context)
+            // Control Buttons in a Card
+            Card(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ElevatedButton(
+                        onClick = {
+                            pointAnnotationManager?.let {
+                                loadWaypoints(db, it, waypointList, context,waypointCounter)
+                            }
+                        },
+                        colors = ButtonDefaults.elevatedButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    ) {
+                        Text("Load Waypoints")
+                    }
+
+                    FilledTonalButton(
+                        onClick = {
+                            saveWaypoint(waypointList, db, context)
+                        }
+                    ) {
+                        Text("Save Waypoint")
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            pointAnnotationManager?.let {
+                                clearWaypoints(
+                                    it,
+                                    waypointList,
+                                    context,
+                                    waypointCounter
+                                )
+                            }
+                        }
+                    ) {
+                        Text("Clear Waypoints")
                     }
                 }
-            ) {
-                Text("Load Waypoints")
-            }
-
-            Button(
-                onClick = {
-                    saveWaypoint(waypointList, db, context)
-                }
-            ) {
-                Text("Save Waypoint")
-            }
-
-            Button(
-                onClick = {
-                    pointAnnotationManager?.let { manager ->
-                        clearWaypoints(db, manager, waypointList, context, waypointCounter)
-                    }
-                }
-            ) {
-                Text("Clear Waypoints")
             }
         }
     }
@@ -210,11 +236,11 @@ private fun createWaypoint(
     pointAnnotationManager.create(pointAnnotationOptions)
     waypointList.add(Pair(point.latitude(), point.longitude()))
 
-    Toast.makeText(
-        context,
-        "Waypoint ${waypointCounter.value} added at: ${point.latitude()}, ${point.longitude()}",
-        Toast.LENGTH_SHORT
-    ).show()
+//    Toast.makeText(
+//        context,
+//        "Waypoint ${waypointCounter.value} added at: ${point.latitude()}, ${point.longitude()}",
+//        Toast.LENGTH_SHORT
+//    ).show()
 }
 
 private fun saveWaypoint(
@@ -224,82 +250,127 @@ private fun saveWaypoint(
 ) {
     if (waypointList.isEmpty()) {
         Toast.makeText(context, "No waypoints to save", Toast.LENGTH_SHORT).show()
+        println("No waypoints to save")
         return
     }
+
+    // Create a batch write operation
+    val batch = db.batch()
+    val waypointsRef = db.collection("waypoints")
 
     waypointList.forEachIndexed { index, (latitude, longitude) ->
         val waypoint = hashMapOf(
             "latitude" to latitude,
             "longitude" to longitude,
-            "label" to (index + 1).toString()
+            "label" to (index + 1).toString(),
+            "timestamp" to com.google.firebase.Timestamp.now()
         )
+        println("Preparing to save waypoint: $waypoint")
 
-        db.collection("waypoints")
-            .add(waypoint)
-            .addOnSuccessListener {
-                Toast.makeText(context, "Waypoint saved!", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(context, "Failed to save: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+        // Add to batch
+        val docRef = waypointsRef.document()
+        batch.set(docRef, waypoint)
     }
-}
 
-fun createMutableWaypointState(initialValue: Int): MutableState<Int> {
-    return mutableIntStateOf(initialValue)
+    // Commit the batch
+    batch.commit()
+        .addOnSuccessListener {
+            Toast.makeText(context, "All waypoints saved successfully!", Toast.LENGTH_SHORT).show()
+            println("Successfully saved ${waypointList.size} waypoints")
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, "Failed to save waypoints: ${e.message}", Toast.LENGTH_SHORT).show()
+            println("Error saving waypoints: ${e.message}")
+            e.printStackTrace()
+        }
 }
 
 private fun loadWaypoints(
     db: FirebaseFirestore,
     pointAnnotationManager: PointAnnotationManager,
     waypointList: MutableList<Pair<Double, Double>>,
-    context: Context
+    context: Context,
+    waypointCounter: MutableState<Int>,
 ) {
-    waypointList.clear() // Ensure previous waypoints are removed before loading
+    println("Starting to load waypoints...")
+
+    // Clear existing waypoints
+    waypointList.clear()
+    pointAnnotationManager.deleteAll()
+
     db.collection("waypoints")
+        .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.ASCENDING)
         .get()
         .addOnSuccessListener { result ->
-            for (document in result) {
-                val latitude = document.getDouble("latitude") ?: continue
-                val longitude = document.getDouble("longitude") ?: continue
-                val point = Point.fromLngLat(longitude, latitude)
+            println("Firestore query completed. Document count: ${result.size()}")
 
-                createWaypoint(
-                    pointAnnotationManager,
-                    point,
-                    mutableIntStateOf(waypointList.size + 1), // Ensures correct numbering, // Wrap in MutableState<Int> ,
-                    waypointList,
-                    context
-                )
+            if (result.isEmpty) {
+                Toast.makeText(context, "No waypoints found!", Toast.LENGTH_SHORT).show()
+                println("No waypoints found in Firestore")
+                return@addOnSuccessListener
             }
-            Toast.makeText(context, "Waypoints loaded!", Toast.LENGTH_SHORT).show()
+
+            result.documents.forEachIndexed { index, document ->
+                println("Processing document ${index + 1}: ${document.data}")
+
+                val latitude = document.getDouble("latitude")
+                val longitude = document.getDouble("longitude")
+
+                if (latitude == null || longitude == null) {
+                    println("Invalid waypoint data in document ${document.id}: lat=$latitude, lng=$longitude")
+                    return@forEachIndexed
+                }
+
+                try {
+                    val point = Point.fromLngLat(longitude, latitude)
+                    createWaypoint(
+                        pointAnnotationManager,
+                        point,
+                        mutableIntStateOf(waypointList.size + 1),
+                        waypointList,
+                        context
+                    )
+                    println("Successfully created waypoint ${waypointList.size} at lat=$latitude, lng=$longitude")
+                } catch (e: Exception) {
+                    println("Error creating waypoint: ${e.message}")
+                    e.printStackTrace()
+                }
+            }
+
+            // ✅ Update waypointCounter to be the next available number
+            waypointCounter.value = waypointList.size + 1
+
+            Toast.makeText(
+                context,
+                "Loaded ${waypointList.size} waypoints",
+                Toast.LENGTH_SHORT
+            ).show()
+            println("Finished loading ${waypointList.size} waypoints")
         }
         .addOnFailureListener { e ->
             Toast.makeText(context, "Failed to load: ${e.message}", Toast.LENGTH_SHORT).show()
+            println("Error loading waypoints: ${e.message}")
+            e.printStackTrace()
         }
 }
 
 private fun clearWaypoints(
-    db: FirebaseFirestore,
     pointAnnotationManager: PointAnnotationManager,
     waypointList: MutableList<Pair<Double, Double>>,
     context: Context,
     waypointCounter: MutableState<Int>
 ) {
-    db.collection("waypoints")
-        .get()
-        .addOnSuccessListener { result ->
-            for (document in result) {
-                db.collection("waypoints").document(document.id).delete()
-            }
-            pointAnnotationManager.deleteAll()
-            waypointList.clear()
-            waypointCounter.value = 1 // Correctly update mutable state
-            Toast.makeText(context, "All waypoints cleared!", Toast.LENGTH_SHORT).show()
-        }
-        .addOnFailureListener { e ->
-            Toast.makeText(context, "Failed to clear: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
+    // Clear markers from the map
+    pointAnnotationManager.deleteAll()
+
+    // Clear local waypoint list (but NOT Firestore)
+    waypointList.clear()
+
+    // Reset waypoint counter
+    waypointCounter.value = 1
+
+    // Inform the user that only the map was cleared
+    Toast.makeText(context, "Waypoints cleared from map, but still saved in Firestore!", Toast.LENGTH_SHORT).show()
 }
 
 

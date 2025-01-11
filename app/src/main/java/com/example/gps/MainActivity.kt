@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
         checkPermissionsAndProceed()
     }
 
-    // ✅ Check for location permission and proceed accordingly
+    // Check for location permission and proceed accordingly
     private fun checkPermissionsAndProceed() {
         if (hasLocationPermission()) {
             navigateToMapScreen()
@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // ✅ Function to check if location permissions are granted
+    // Function to check if location permissions are granted
     private fun hasLocationPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             this,
@@ -48,12 +48,12 @@ class MainActivity : ComponentActivity() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    // ✅ Request Location Permission
+    // Request Location Permission
     private fun requestLocationPermission() {
         requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
-    // ✅ Handle permission result
+    // Handle permission result
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-    // ✅ Navigate to `MapScreen.kt`
+    // Navigate to `MapScreen.kt`
     private fun navigateToMapScreen() {
         setContent {
             MapScreen()
