@@ -372,7 +372,3 @@ private fun clearWaypoints(
     // Inform the user that only the map was cleared
     Toast.makeText(context, "Waypoints cleared from map, but still saved in Firestore!", Toast.LENGTH_SHORT).show()
 }
-
-
-
-
