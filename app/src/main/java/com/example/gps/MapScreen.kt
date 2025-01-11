@@ -10,6 +10,8 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.os.Bundle
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -63,6 +65,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.ktx.auth
+import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import kotlinx.coroutines.launch
 
 @SuppressLint("Lifecycle")
@@ -97,6 +100,7 @@ fun MapScreen() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
+
     // State
     val waypointList = remember { mutableStateListOf<Pair<Double, Double>>() }
     var waypointCounter = remember { mutableIntStateOf(1) }
@@ -109,109 +113,134 @@ fun MapScreen() {
     val mapView = rememberMapViewWithLifecycle()
     val mapboxMap = remember { mapView.getMapboxMap() }
 
+    var hasLocationPermission by remember { mutableStateOf(checkLocationPermission(context)) }
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            hasLocationPermission = isGranted
+            if (!isGranted) {
+                Toast.makeText(context, "Permission Denied. App cannot function properly.", Toast.LENGTH_LONG).show()
+            }
+        }
+    )
 
     // Initialize map and location tracking
-    LaunchedEffect(mapView) {
-        mapboxMap.loadStyleUri(Style.MAPBOX_STREETS) { style ->
-            // Enable location component
-            mapView.location.apply {
-                updateSettings {
-                    enabled = true
-                    pulsingEnabled = true
-                }
+    LaunchedEffect(Unit) {
 
-                // Center camera on user location
-                addOnIndicatorPositionChangedListener { point ->
-                    mapboxMap.setCamera(
-                        CameraOptions.Builder()
-                            .center(point)
-                            .zoom(15.0)
-                            .build()
-                    )
-                }
-            }
-
-            // Initialize point annotation manager
-            pointAnnotationManager = mapView.annotations.createPointAnnotationManager()
-        }
-
-        // Set up touch listener for waypoint creation
-        mapView.setOnTouchListener { _, event ->
-            if (event.action == android.view.MotionEvent.ACTION_UP) {
-                val screenPoint = ScreenCoordinate(event.x.toDouble(), event.y.toDouble())
-                val mapPoint = mapboxMap.coordinateForPixel(screenPoint)
-
-                coroutineScope.launch {
-                    pointAnnotationManager?.let {
-                        createWaypoint(it, mapPoint, waypointCounter, waypointList, context)
-                        waypointCounter.intValue++
-                    }
-                }
-            }
-            false
+        if (!hasLocationPermission) {
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+    LaunchedEffect(hasLocationPermission) {
+        if (hasLocationPermission) {
+            if (hasLocationPermission) {
+
+                mapboxMap.loadStyleUri(Style.MAPBOX_STREETS) { style ->
+                    // Enable location component
+                    mapView.location.apply {
+                        updateSettings {
+                            enabled = true
+                            pulsingEnabled = true
+                        }
+
+                        // Center camera on user location
+                        addOnIndicatorPositionChangedListener { point ->
+                            mapboxMap.setCamera(
+                                CameraOptions.Builder()
+                                    .center(point)
+                                    .zoom(15.0)
+                                    .build()
+                            )
+                        }
+                    }
+
+                    // Initialize point annotation manager
+                    pointAnnotationManager = mapView.annotations.createPointAnnotationManager()
+                }
+            }
+        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Map View
-            AndroidView(
-                factory = { mapView },
-                modifier = Modifier.fillMaxSize()
-            )
+        if(hasLocationPermission) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Map View
+                AndroidView(
+                    factory = { mapView },
+                    modifier = Modifier.fillMaxSize()
+                )
 
-            // Control Buttons in a Card
-            Card(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ElevatedButton(
-                        onClick = {
+                // Touch Listener for Waypoints
+                LaunchedEffect(mapboxMap) {
+                    mapView.getMapboxMap().addOnMapClickListener { point ->
+                        coroutineScope.launch {
                             pointAnnotationManager?.let {
-                                loadWaypoints(db, it, waypointList, context,waypointCounter)
-                            }
-                        },
-                        colors = ButtonDefaults.elevatedButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    ) {
-                        Text("Load Waypoints")
-                    }
-
-                    FilledTonalButton(
-                        onClick = {
-                            saveWaypoint(waypointList, db, context)
-                        }
-                    ) {
-                        Text("Save Waypoint")
-                    }
-
-                    OutlinedButton(
-                        onClick = {
-                            pointAnnotationManager?.let {
-                                clearWaypoints(
-                                    it,
-                                    waypointList,
-                                    context,
-                                    waypointCounter
-                                )
+                                createWaypoint(it, point, waypointCounter, waypointList, context)
+                                waypointCounter.intValue++
                             }
                         }
-                    ) {
-                        Text("Clear Waypoints")
+                        true
                     }
                 }
+
+                // Control Buttons in a Card
+                Card(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        ElevatedButton(
+                            onClick = {
+                                pointAnnotationManager?.let {
+                                    loadWaypoints(db, it, waypointList, context,waypointCounter)
+                                }
+                            },
+                            colors = ButtonDefaults.elevatedButtonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        ) {
+                            Text("Load Waypoints")
+                        }
+
+                        FilledTonalButton(
+                            onClick = {
+                                saveWaypoint(waypointList, db, context)
+                            }
+                        ) {
+                            Text("Save Waypoint")
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+                                pointAnnotationManager?.let {
+                                    clearWaypoints(
+                                        it,
+                                        waypointList,
+                                        context,
+                                        waypointCounter
+                                    )
+                                }
+                            }
+                        ) {
+                            Text("Clear Waypoints")
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            Button(onClick = { requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }) {
+                Text("Request Location Permission")
             }
         }
     }
@@ -373,6 +402,13 @@ private fun clearWaypoints(
     Toast.makeText(context, "Waypoints cleared from map, but still saved in Firestore!", Toast.LENGTH_SHORT).show()
 }
 
+// Function to check if location permission is granted
+private fun checkLocationPermission(context: android.content.Context): Boolean {
+    return ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+}
 
 
 

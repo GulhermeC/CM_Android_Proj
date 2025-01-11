@@ -8,11 +8,22 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.example.gps.navigation.BottomNavBar
+import com.example.gps.MapScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -29,12 +40,16 @@ class MainActivity : ComponentActivity() {
         auth = Firebase.auth
 
         checkPermissionsAndProceed()
+
+        setContent {
+            TrailApp()
+        }
+
     }
 
     // Check for location permission and proceed accordingly
     private fun checkPermissionsAndProceed() {
         if (hasLocationPermission()) {
-            navigateToMapScreen()
         } else {
             requestLocationPermission()
         }
@@ -57,16 +72,32 @@ class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
-                navigateToMapScreen()
             } else {
                 Toast.makeText(this, "Permission Denied. App cannot function properly.", Toast.LENGTH_LONG).show()
             }
         }
 
-    // Navigate to `MapScreen.kt`
-    private fun navigateToMapScreen() {
-        setContent {
-            MapScreen()
-        }
+}
+
+@Composable
+fun TrailApp() {
+    val navController = rememberNavController()
+
+    Scaffold(
+        bottomBar = { BottomNavBar(navController) } // Attach BottomNavBar
+    ) { innerPadding ->
+        NavHostContainer(navController, Modifier.padding(innerPadding))
+    }
+}
+
+
+@Composable
+fun NavHostContainer(navController: NavHostController, modifier: Modifier) {
+    NavHost(
+        navController = navController,
+        startDestination = "map",
+        modifier = modifier
+    ) {
+        composable("map") { MapScreen() }
     }
 }
