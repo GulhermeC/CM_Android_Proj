@@ -30,6 +30,7 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.ktx.auth
 
 class MainActivity : AppCompatActivity() {
@@ -41,6 +42,8 @@ class MainActivity : AppCompatActivity() {
     private var waypointCounter = 1
 
     private lateinit var auth: FirebaseAuth
+
+    private lateinit var db: FirebaseFirestore
 
     // Variables to store the latitude and longitude of the created waypoints
     private val waypointList = mutableListOf<Pair<Double, Double>>()
@@ -54,6 +57,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         FirebaseApp.initializeApp(this)
+
+        db = FirebaseFirestore.getInstance()
 
         auth = Firebase.auth
 
@@ -211,46 +216,63 @@ class MainActivity : AppCompatActivity() {
             }
             // Clear the waypoint list after saving
             waypointList.clear()
-
-            Toast.makeText(this, "Waypoints saved!", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, "No waypoints to save", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun saveWaypointToDatabase(point: Point, label: String) {
-        val db = databaseHelper.writableDatabase
-        db.execSQL(
-            "INSERT INTO waypoints (latitude, longitude, label) VALUES (?, ?, ?)",
-            arrayOf(point.latitude(), point.longitude(), label)
+        val waypoint = hashMapOf(
+            "latitude" to point.latitude(),
+            "longitude" to point.longitude(),
+            "label" to label
         )
+
+        db.collection("waypoints")
+            .add(waypoint)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Waypoint saved to Firebase!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Failed to save waypoint: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun loadWaypoints() {
-        val db = databaseHelper.readableDatabase
-        val cursor: Cursor = db.rawQuery("SELECT * FROM waypoints", null)
-        if (cursor.moveToFirst()) {
-            do {
-                val latitude = cursor.getDouble(cursor.getColumnIndexOrThrow("latitude"))
-                val longitude = cursor.getDouble(cursor.getColumnIndexOrThrow("longitude"))
-                val point = Point.fromLngLat(longitude, latitude)
-                createWaypoint(point)  // Add waypoint to the map
-            } while (cursor.moveToNext())
+        if (!::pointAnnotationManager.isInitialized) {
+            Toast.makeText(this, "Map is not ready yet. Please wait.", Toast.LENGTH_SHORT).show()
+            return
         }
-        cursor.close()
-        Toast.makeText(this, "Waypoints loaded!", Toast.LENGTH_SHORT).show()
+
+        db.collection("waypoints")
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    val latitude = document.getDouble("latitude") ?: continue
+                    val longitude = document.getDouble("longitude") ?: continue
+                    val point = Point.fromLngLat(longitude, latitude)
+                    createWaypoint(point) // Add waypoint to the map
+                }
+                Toast.makeText(this, "Waypoints loaded from Firebase!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Failed to load waypoints: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun clearWaypoints() {
-        // Clear all point annotations from the map
-        pointAnnotationManager.deleteAll()
-
-        // Clear the waypoint list
-        waypointList.clear()
-
-        waypointCounter = 1
-
-        Toast.makeText(this, "All waypoints cleared", Toast.LENGTH_SHORT).show()
+        db.collection("waypoints")
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    db.collection("waypoints").document(document.id).delete()
+                }
+                clearWaypoints() // Clear the map and in-memory list
+                Toast.makeText(this, "All waypoints cleared from Firebase!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Failed to clear waypoints: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     override fun onRequestPermissionsResult(
