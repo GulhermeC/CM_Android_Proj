@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -16,7 +16,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
         BottomNavItem("Map", "map", Icons.Filled.Place),
-        BottomNavItem("Profile", "profile", Icons.Filled.Person),
+        BottomNavItem("Create", "create", Icons.Filled.Add),
         BottomNavItem("Settings", "settings", Icons.Filled.Settings)
     )
 
