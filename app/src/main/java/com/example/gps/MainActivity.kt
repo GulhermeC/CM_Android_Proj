@@ -261,18 +261,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun clearWaypoints() {
-        db.collection("waypoints")
-            .get()
-            .addOnSuccessListener { result ->
-                for (document in result) {
-                    db.collection("waypoints").document(document.id).delete()
-                }
-                clearWaypoints() // Clear the map and in-memory list
-                Toast.makeText(this, "All waypoints cleared from Firebase!", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(this, "Failed to clear waypoints: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+        // Clear all point annotations from the map
+        pointAnnotationManager.deleteAll()
+
+        // Clear the waypoint list
+        waypointList.clear()
+
+        waypointCounter = 1
+
+        Toast.makeText(this, "All waypoints cleared", Toast.LENGTH_SHORT).show()
     }
 
     override fun onRequestPermissionsResult(
