@@ -24,6 +24,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.example.gps.navigation.BottomNavBar
 import com.example.gps.MapScreen
+import com.example.gps.TrailCreationScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -99,5 +100,6 @@ fun NavHostContainer(navController: NavHostController, modifier: Modifier) {
         modifier = modifier
     ) {
         composable("map") { MapScreen() }
+        composable("create") { TrailCreationScreen() }
     }
 }
