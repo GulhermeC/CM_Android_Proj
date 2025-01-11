@@ -253,19 +253,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("Lifecycle")
     override fun onStart() {
         super.onStart()
         mapView.onStart()
     }
 
-    @SuppressLint("Lifecycle")
     override fun onStop() {
         super.onStop()
         mapView.onStop()
     }
 
-    @SuppressLint("Lifecycle")
     override fun onDestroy() {
         super.onDestroy()
         mapView.onDestroy()
