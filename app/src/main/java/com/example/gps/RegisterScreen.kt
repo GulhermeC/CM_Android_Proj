@@ -23,13 +23,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.gps.LoginActivity
 import com.example.gps.RegisterActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(onLoginAttempt: (String, String) -> Unit, context: Context) {
+fun RegisterScreen(onRegisterAttempt: (String, String) -> Unit, context: Context) {
     val username = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
+    val confirmPassword = remember { mutableStateOf("") }
 
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -54,29 +56,39 @@ fun LoginScreen(onLoginAttempt: (String, String) -> Unit, context: Context) {
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = confirmPassword.value,
+                onValueChange = { confirmPassword.value = it },
+                label = { Text("Confirm Password") },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = {
-                val emailInput = username.value.trim()
-                val passwordInput = password.value.trim()
-                // Here you would add your login logic
-                if (username.value.isNotBlank() && password.value.isNotBlank()) {
-                    // Simulate successful login
-                    onLoginAttempt(emailInput, passwordInput)
+                if (username.value.isNotBlank() && password.value.isNotBlank() && confirmPassword.value.isNotBlank()) {
+                    if (password.value == confirmPassword.value) {
+                        // Placeholder for functionality
+                        onRegisterAttempt(username.value.trim(), password.value.trim())
+                    } else {
+                        Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
-                    Toast.makeText(context, "Please enter username and password", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 }
             }) {
-                Text("Login")
+                Text("Register")
             }
             // Spacer to separate buttons
             Spacer(modifier = Modifier.height(8.dp))
 
             // Register Button
             Button(onClick = {
-                val intent = Intent(context, RegisterActivity::class.java)
+                val intent = Intent(context, LoginActivity::class.java)
                 context.startActivity(intent)
             }) {
-                Text("Register")
+                Text("Login")
             }
         }
     }
@@ -84,10 +96,10 @@ fun LoginScreen(onLoginAttempt: (String, String) -> Unit, context: Context) {
 
 @Preview(showBackground = true)
 @Composable
-fun LoginScreenPreview() {
+fun RegisterScreenPreview() {
     val context = LocalContext.current
-    LoginScreen(
-        onLoginAttempt = { email, pass -> },
+    RegisterScreen(
+        onRegisterAttempt = { _, _ -> },
         context = context
     )
 }

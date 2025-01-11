@@ -43,6 +43,12 @@
             android:theme="@style/Theme.Gps">
         </activity>
 
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Gps">
+        </activity>
+
     </application>
 
 </manifest>
