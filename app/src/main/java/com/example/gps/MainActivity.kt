@@ -101,5 +101,6 @@ fun NavHostContainer(navController: NavHostController, modifier: Modifier) {
     ) {
         composable("map") { MapScreen() }
         composable("create") { TrailCreationScreen() }
+        composable("browse") { BrowseScreen() }
     }
 }
