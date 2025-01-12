@@ -1,5 +1,12 @@
 package com.example.gps
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
@@ -11,14 +18,31 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import coil3.compose.rememberAsyncImagePainter
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import androidx.compose.ui.platform.LocalContext
+import android.content.Context
 
 @Composable
-fun TrailCreationScreen(
-//    onSaveTrail: (String, String, String) -> Unit // Callback function for Firebase integration
-) {
+fun TrailCreationScreen() {
     var trailName by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var difficulty by remember { mutableStateOf("Easy") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var isSaving by remember { mutableStateOf(false) }
+    val firestore = FirebaseFirestore.getInstance()
+    val storage = FirebaseStorage.getInstance()
+    val context = LocalContext.current
+
+    // Image Picker Launcher
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            selectedImageUri = uri
+        }
+    )
 
     Column(
         modifier = Modifier
@@ -26,7 +50,6 @@ fun TrailCreationScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Back Button Placeholder (If needed, wrap with Row and Align to Start)
         Text(
             text = "Create a Trail",
             style = MaterialTheme.typography.titleLarge
@@ -73,14 +96,55 @@ fun TrailCreationScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-//        // Save Button
-//        Button(
-//            onClick = { onSaveTrail(trailName, location, difficulty) },
-//            modifier = Modifier.fillMaxWidth(),
-//            enabled = trailName.isNotBlank() && location.isNotBlank()
-//        ) {
-//            Text(text = "Save Trail")
-//        }
+        // Image Picker
+        Button(onClick = { imagePickerLauncher.launch("image/*") }) {
+            Text("Select Image")
+        }
+
+        // Display Selected Image
+        selectedImageUri?.let { uri ->
+            Spacer(modifier = Modifier.height(12.dp))
+            Image(
+                painter = rememberAsyncImagePainter(model = uri),
+                contentDescription = "Selected Image",
+                modifier = Modifier
+                    .size(200.dp)
+                    .padding(8.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Save Button
+        Button(
+            onClick = {
+                if (trailName.isNotBlank() && location.isNotBlank()) {
+                    isSaving = true
+                    saveTrail(
+                        trailName,
+                        location,
+                        difficulty,
+                        selectedImageUri,
+                        firestore,
+                        storage,
+                        context
+                    ) { success ->
+                        isSaving = false
+                        if (success) {
+                            Toast.makeText(context, "Trail saved successfully!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Failed to save trail", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isSaving
+        ) {
+            Text(if (isSaving) "Saving..." else "Save Trail")
+        }
     }
 }
 
@@ -96,3 +160,58 @@ fun DifficultyRadioButton(label: String, selectedDifficulty: String, onSelection
         Text(text = label, modifier = Modifier.padding(start = 4.dp))
     }
 }
+
+private fun saveTrail(
+    trailName: String,
+    location: String,
+    difficulty: String,
+    imageUri: Uri?,
+    firestore: FirebaseFirestore,
+    storage: FirebaseStorage,
+    context: Context,
+    onComplete: (Boolean) -> Unit
+) {
+    // Upload image to Firebase Storage
+    if (imageUri != null) {
+        val imageRef = storage.reference.child("trails/${trailName}_${System.currentTimeMillis()}.jpg")
+        imageRef.putFile(imageUri)
+            .addOnSuccessListener {
+                imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
+                    saveTrailData(trailName, location, difficulty, downloadUrl.toString(), firestore, onComplete)
+                }.addOnFailureListener {
+                    onComplete(false)
+                }
+            }
+            .addOnFailureListener {
+                onComplete(false)
+            }
+    } else {
+        saveTrailData(trailName, location, difficulty, null, firestore, onComplete)
+    }
+}
+
+private fun saveTrailData(
+    trailName: String,
+    location: String,
+    difficulty: String,
+    imageUrl: String?,
+    firestore: FirebaseFirestore,
+    onComplete: (Boolean) -> Unit
+) {
+    val trailData = mapOf(
+        "name" to trailName,
+        "location" to location,
+        "difficulty" to difficulty,
+        "imageUrl" to imageUrl
+    )
+
+    firestore.collection("trails")
+        .add(trailData)
+        .addOnSuccessListener {
+            onComplete(true)
+        }
+        .addOnFailureListener {
+            onComplete(false)
+        }
+}
+

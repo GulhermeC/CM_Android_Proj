@@ -25,6 +25,8 @@ import com.google.firebase.ktx.Firebase
 import com.example.gps.navigation.BottomNavBar
 import com.example.gps.MapScreen
 import com.example.gps.TrailCreationScreen
+import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 
 class MainActivity : ComponentActivity() {
 
@@ -41,6 +43,11 @@ class MainActivity : ComponentActivity() {
         auth = Firebase.auth
 
         checkPermissionsAndProceed()
+
+        val firebaseAppCheck = FirebaseAppCheck.getInstance()
+        firebaseAppCheck.installAppCheckProviderFactory(
+            PlayIntegrityAppCheckProviderFactory.getInstance()
+        )
 
         setContent {
             TrailApp()
