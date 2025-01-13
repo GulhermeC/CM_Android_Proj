@@ -29,6 +29,7 @@ import com.example.gps.R
 import com.example.gps.data.Trail
 import java.util.Locale
 import kotlinx.parcelize.Parcelize
+import android.app.Activity
 
 @Composable
 fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
@@ -103,7 +104,7 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text(text = "Show only favorites")
+            Text(text = stringResource(R.string.show_only_favorites))
             Spacer(modifier = Modifier.width(8.dp))
             Switch(
                 checked = showOnlyFavorites,
@@ -158,21 +159,25 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
 }
 
 @Composable
-fun DropdownLanguageSelector(selectedLanguage: String, onLanguageChange: (String) -> Unit) {
+fun DropdownLanguageSelector(
+    selectedLanguage: String,
+    onLanguageChange: (String) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
-    val languages = mapOf("en" to "English", "pt" to "Português", "es" to "Español")
+    val languageCodes = listOf("en", "pt", "es")
 
     Box {
         Button(onClick = { expanded = true }) {
-            Text(text = languages[selectedLanguage] ?: "Select Language")
+            Text(stringResource(R.string.select_language))
         }
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            languages.forEach { (code, language) ->
+            languageCodes.forEach { code ->
                 DropdownMenuItem(
-                    text = { Text(language) },
+                    text = { Text(getLanguageLabel(code)) },
                     onClick = {
                         onLanguageChange(code)
                         expanded = false
@@ -241,6 +246,16 @@ fun TrailItem(
     }
 }
 
+@Composable
+fun getLanguageLabel(langCode: String): String {
+    return when (langCode) {
+        "en" -> stringResource(R.string.lang_en)
+        "pt" -> stringResource(R.string.lang_pt)
+        "es" -> stringResource(R.string.lang_es)
+        else -> stringResource(R.string.lang_en) // fallback
+    }
+}
+
 fun updateLocale(context: Context, languageCode: String) {
     val locale = Locale(languageCode)
     Locale.setDefault(locale)
@@ -248,4 +263,5 @@ fun updateLocale(context: Context, languageCode: String) {
     config.setLocale(locale)
     context.createConfigurationContext(config)
     context.resources.updateConfiguration(config, context.resources.displayMetrics)
+    (context as? Activity)?.recreate()
 }

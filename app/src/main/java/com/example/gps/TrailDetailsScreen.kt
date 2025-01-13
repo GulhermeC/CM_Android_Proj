@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.example.gps.data.Trail
+import androidx.compose.ui.res.stringResource
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
@@ -49,7 +50,7 @@ fun TrailDetailsScreen(trail: Trail,navController: NavController) {
     }
 
     IconButton(onClick = { navController.popBackStack()  }) {
-        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
     }
     Spacer(modifier = Modifier.height(16.dp))
 
@@ -63,7 +64,7 @@ fun TrailDetailsScreen(trail: Trail,navController: NavController) {
         //println("Image URL in TrailDetailsScreen: ${trail.imageUrl}")
         Image(
             painter = rememberAsyncImagePainter(model = trail.imageUrl),
-            contentDescription = "Trail Image",
+            contentDescription = stringResource(R.string.trail_image),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
@@ -84,7 +85,7 @@ fun TrailDetailsScreen(trail: Trail,navController: NavController) {
 
         // Location
         Text(
-            text = "Location: ${trail.location}",
+            text = stringResource(R.string.location) + ": " + trail.location,
             style = MaterialTheme.typography.bodyLarge,
             color = Color.Gray
         )
@@ -93,7 +94,7 @@ fun TrailDetailsScreen(trail: Trail,navController: NavController) {
 
         // Difficulty
         Text(
-            text = "Difficulty: ${trail.difficulty}",
+            text = stringResource(R.string.difficulty) + ": " + trail.difficulty,
             style = MaterialTheme.typography.bodyLarge,
             color = Color.Gray
         )
@@ -107,14 +108,14 @@ fun TrailDetailsScreen(trail: Trail,navController: NavController) {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Choose Trail")
+            Text(stringResource(R.string.choose_trail))
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         if (waypoints.isNotEmpty()) {
             Text(
-                text = "Waypoints:",
+                text = stringResource(R.string.waypoints_label),
                 style = MaterialTheme.typography.titleLarge
             )
 
