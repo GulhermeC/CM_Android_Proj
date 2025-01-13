@@ -31,10 +31,15 @@ import androidx.navigation.NavController
 import java.util.Locale
 import kotlinx.parcelize.Parcelize
 import android.app.Activity
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
     val context = LocalContext.current
+    val firestore = FirebaseFirestore.getInstance()
+    val auth = FirebaseAuth.getInstance()
+    val user = auth.currentUser
+
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     var trailList by remember { mutableStateOf<List<Trail>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -47,30 +52,55 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
     LaunchedEffect(Unit) {
         isLoading = true
         errorMessage = null
-        val firestore = FirebaseFirestore.getInstance()
+
         firestore.collection("trails")
             .get()
-            .addOnSuccessListener { result ->
-                val trails = result.mapNotNull { document ->
-                    val name = document.getString("name")
-                    val location = document.getString("location")
-                    val imageUrl = document.getString("imageUrl")
-                    val difficulty = document.getString("difficulty")
+            .addOnSuccessListener { trailSnapshot ->
+                val allTrails = trailSnapshot.mapNotNull { doc ->
+                    val name = doc.getString("name")
+                    val location = doc.getString("location")
+                    val imageUrl = doc.getString("imageUrl")
+                    val difficulty = doc.getString("difficulty")
+
                     if (name != null && location != null && imageUrl != null) {
                         Trail(
-                            id = document.id,
+                            id = doc.id,
                             name = name,
                             location = location,
                             difficulty = difficulty ?: "Unknown",
                             imageUrl = imageUrl,
                             isFavorite = false
                         )
-                    } else {
-                        null
-                    }
+                    } else null
                 }
-                trailList = trails
-                isLoading = false
+
+                if (user != null) {
+                    // fetch user favorites
+                    firestore.collection("users")
+                        .document(user.uid)
+                        .collection("favorites")
+                        .get()
+                        .addOnSuccessListener { favSnapshot ->
+                            val favoriteIds = favSnapshot.documents.map { it.id }.toSet()
+
+                            // Merge
+                            val mergedTrails = allTrails.map { t ->
+                                if (favoriteIds.contains(t.id)) t.copy(isFavorite = true)
+                                else t
+                            }
+
+                            trailList = mergedTrails
+                            isLoading = false
+                        }
+                        .addOnFailureListener { e ->
+                            errorMessage = e.message
+                            isLoading = false
+                        }
+                } else {
+                    // Not logged in => no personal favorites
+                    trailList = allTrails
+                    isLoading = false
+                }
             }
             .addOnFailureListener { e ->
                 errorMessage = e.message
@@ -135,7 +165,7 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
                 filteredTrails
             }
 
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            LazyColumn {
                 items(displayedTrails) { trail ->
                     TrailItem(
                         location = trail.location,
@@ -143,13 +173,20 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
                         imageUrl = trail.imageUrl,
                         isFavorite = trail.isFavorite,
                         onClick = { onTrailClick(trail) },
-                        // Toggling favorite in memory
                         onFavoriteClick = {
-                            // Update this trail’s isFavorite in the list
                             trailList = trailList.map {
-                                if (it.name == trail.name && it.location == trail.location) {
-                                    it.copy(isFavorite = !it.isFavorite)
-                                } else it
+                                if (it.id == trail.id) it.copy(isFavorite = !it.isFavorite) else it
+                            }
+                            val newValue = !trail.isFavorite
+                            if (user != null) {
+                                val userDoc = firestore.collection("users").document(user.uid)
+                                val favDocRef = userDoc.collection("favorites").document(trail.id)
+
+                                if (newValue) {
+                                    favDocRef.set(mapOf("favorite" to true))
+                                } else {
+                                    favDocRef.delete()
+                                }
                             }
                         }
                     )
