@@ -28,6 +28,8 @@ import com.example.gps.data.Trail
 import androidx.navigation.NavController
 import java.util.Locale
 import android.app.Activity
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.ui.res.painterResource
 import com.google.firebase.auth.FirebaseAuth
 import com.example.gps.R
 import com.example.gps.viewmodels.LoginViewModel
@@ -58,20 +60,22 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
                 val allTrails = trailSnapshot.mapNotNull { doc ->
                     val name = doc.getString("name")
                     val location = doc.getString("location")
-                    val imageUrl = doc.getString("imageUrl")
+                    val imageUrl = doc.getString("imageUrl") ?: ""
                     val difficulty = doc.getString("difficulty")
 
-                    if (name != null && location != null && imageUrl != null) {
-                        Trail(
-                            id = doc.id,
-                            name = name,
-                            location = location,
-                            difficulty = difficulty ?: "Unknown",
-                            imageUrl = imageUrl,
-                            isFavorite = false
-                        )
+                    if (name != null && location != null) {
+                            Trail(
+                                id = doc.id,
+                                name = name,
+                                location = location,
+                                difficulty = difficulty ?: "Unknown",
+                                imageUrl = imageUrl,
+                                isFavorite = false
+                            )
                     } else null
                 }
+
+                println("Total Trails Retrieved: ${allTrails.size}") //Log the trail count
 
                 if (user != null) {
                     // fetch user favorites
@@ -234,6 +238,7 @@ fun TrailItem(
     onClick: () -> Unit,
     onFavoriteClick: () -> Unit
 ) {
+
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
@@ -263,14 +268,24 @@ fun TrailItem(
             println("Image URL in BrowseScreen: $imageUrl")
 
             Row {
-                Image(
-                    painter = rememberAsyncImagePainter(model = imageUrl),
-                    contentDescription = "Trail Image",
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                )
-
+                if (imageUrl.isBlank()) {
+                    // Show an icon instead of an image when no image is available
+                    Icon(
+                        imageVector = Icons.Default.Place, // Replace with an appropriate Material icon
+                        contentDescription = "Default Trail Icon",
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                } else {
+                    Image(
+                        painter = rememberAsyncImagePainter(model = imageUrl),
+                        contentDescription = "Trail Image",
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                }
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
