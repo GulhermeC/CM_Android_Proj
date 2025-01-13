@@ -1,5 +1,7 @@
 package com.example.gps
 
+import LoginScreen
+import RegisterScreen
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -22,6 +24,25 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.example.gps.navigation.BottomNavBar
 import android.net.Uri
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.example.gps.data.Trail
@@ -48,7 +69,10 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
-            TrailApp()
+            val navController = rememberNavController()
+            val viewModel: LoginViewModel = viewModel()
+
+            TrailApp(navController,viewModel)
         }
 
     }
@@ -86,24 +110,37 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TrailApp() {
-    val navController = rememberNavController()
+fun TrailApp(navController: NavHostController,viewModel: LoginViewModel = viewModel()) {
+    val auth = Firebase.auth
+    val rememberMe by viewModel.rememberMeFlow.collectAsState(initial = false)
+
+
+
+    // 🔹 Compute `startDestination` dynamically
+    val startDestination by remember {
+        derivedStateOf {
+            if (rememberMe && auth.currentUser != null) "create" else "login"
+        }
+    }
 
     Scaffold(
-        bottomBar = { BottomNavBar(navController) } // Attach BottomNavBar
+        bottomBar = { BottomNavBar(navController) }
     ) { innerPadding ->
-        NavHostContainer(navController, Modifier.padding(innerPadding))
+        NavHostContainer(navController, Modifier.padding(innerPadding), startDestination!!, viewModel)
     }
+
 }
 
 
 @Composable
-fun NavHostContainer(navController: NavHostController, modifier: Modifier) {
+fun NavHostContainer(navController: NavHostController, modifier: Modifier,startDestination: String,viewModel: LoginViewModel) {
     NavHost(
         navController = navController,
-        startDestination = "create",
+        startDestination = startDestination,
         modifier = modifier
     ) {
+        composable("login") { LoginScreen(navController, viewModel) }
+        composable("register") { RegisterScreen(navController) }
         composable("map") { MapScreen() }
         composable("create") { TrailCreationScreen( navController) }
         composable("browse") {
@@ -120,5 +157,23 @@ fun NavHostContainer(navController: NavHostController, modifier: Modifier) {
             trail?.let { TrailDetailsScreen(it, navController) }
         }
         composable("waypointSelection") { WaypointSelectionScreen(navController) }
+    }
+}
+
+@Composable
+fun LoadingScreen() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = androidx.compose.ui.graphics.Color.White
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator() // 🔹 Show a loading spinner
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Loading...")
+        }
     }
 }

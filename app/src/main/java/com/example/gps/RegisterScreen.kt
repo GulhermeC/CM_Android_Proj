@@ -23,15 +23,19 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.gps.LoginActivity
-import com.example.gps.RegisterActivity
+import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(onRegisterAttempt: (String, String) -> Unit, context: Context) {
+fun RegisterScreen(navController: NavController) {
+    val context = LocalContext.current
+    val auth = remember { FirebaseAuth.getInstance() }
+
     val username = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val confirmPassword = remember { mutableStateOf("") }
+    val loading = remember { mutableStateOf(false) }
 
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -67,39 +71,45 @@ fun RegisterScreen(onRegisterAttempt: (String, String) -> Unit, context: Context
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = {
-                if (username.value.isNotBlank() && password.value.isNotBlank() && confirmPassword.value.isNotBlank()) {
-                    if (password.value == confirmPassword.value) {
-                        // Placeholder for functionality
-                        onRegisterAttempt(username.value.trim(), password.value.trim())
-                    } else {
-                        Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                val usernameInput = username.value.trim()
+                val passwordInput = password.value.trim()
+                val confirmPasswordInput = confirmPassword.value.trim()
+                if (usernameInput.isBlank() && passwordInput.isBlank() && confirmPasswordInput.isBlank()) {
+                    Toast.makeText(context, "All fields are required", Toast.LENGTH_SHORT).show()
+                    return@Button
                 }
-            }) {
+                if (passwordInput != confirmPasswordInput) {
+                    Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+
+                loading.value = true
+                auth.createUserWithEmailAndPassword(usernameInput, passwordInput)
+                    .addOnCompleteListener { task ->
+                        loading.value = false
+                        if (task.isSuccessful) {
+                            navController.navigate("login") {
+                                popUpTo("register") { inclusive = true }
+                            }
+                        } else {
+                            Toast.makeText(context, "Registration failed", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+            },
+            enabled = !loading.value
+            ) {
                 Text("Register")
             }
             // Spacer to separate buttons
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Register Button
-            Button(onClick = {
-                val intent = Intent(context, LoginActivity::class.java)
-                context.startActivity(intent)
-            }) {
-                Text("Login")
+            Button(
+                onClick = { navController.navigate("login") },
+                enabled = !loading.value
+            ) {
+                Text("Back to Login")
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RegisterScreenPreview() {
-    val context = LocalContext.current
-    RegisterScreen(
-        onRegisterAttempt = { _, _ -> },
-        context = context
-    )
 }

@@ -83,6 +83,7 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-compose:3.0.4")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
     implementation("com.google.firebase:firebase-appcheck-playintegrity:18.0.0")
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.play.services.maps)
     implementation(libs.androidx.navigation.runtime.ktx)
