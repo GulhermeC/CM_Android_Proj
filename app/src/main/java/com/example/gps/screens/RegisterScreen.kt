@@ -43,28 +43,28 @@ fun RegisterScreen(navController: NavController) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFE6F2EF) // ✅ Soft pastel background
+        color = Color(0xFFE6F2EF) //  Soft pastel background
     ) {
         Column(
             modifier = Modifier
-                .padding(24.dp) // ✅ More padding for better spacing
+                .padding(24.dp) // More padding for better spacing
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // 🔹 Email Field
+            // Email Field
             OutlinedTextField(
                 value = username.value,
                 onValueChange = { username.value = it },
                 label = { Text(stringResource(R.string.email)) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners for modern feel
+                shape = RoundedCornerShape(12.dp), // Rounded corners for modern feel
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 🔹 Password Field
+            // Password Field
             OutlinedTextField(
                 value = password.value,
                 onValueChange = { password.value = it },
@@ -72,13 +72,13 @@ fun RegisterScreen(navController: NavController) {
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners
+                shape = RoundedCornerShape(12.dp), // Rounded corners
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 🔹 Confirm Password Field
+            // Confirm Password Field
             OutlinedTextField(
                 value = confirmPassword.value,
                 onValueChange = { confirmPassword.value = it },
@@ -86,13 +86,13 @@ fun RegisterScreen(navController: NavController) {
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners
+                shape = RoundedCornerShape(12.dp), // Rounded corners
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔹 Register Button
+            // Register Button
             Button(
                 onClick = {
                     val usernameInput = username.value.trim()
@@ -132,8 +132,8 @@ fun RegisterScreen(navController: NavController) {
                         }
                 },
                 enabled = !loading.value,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B)), // ✅ Dark Green Button
-                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B)), // Dark Green Button
+                shape = RoundedCornerShape(12.dp), // Rounded corners
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -147,16 +147,16 @@ fun RegisterScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 🔹 Login Button
+            // Login Button
             Button(
                 onClick = { navController.navigate("login") },
                 enabled = !loading.value,
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners
+                shape = RoundedCornerShape(12.dp), // Rounded corners
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp) // ✅ Soft shadow
+                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp) // Soft shadow
             ) {
                 Text(
                     stringResource(R.string.login),

@@ -110,7 +110,7 @@ fun FavoritesScreen(navController: androidx.navigation.NavController, viewModel:
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.favorites_title), color = Color.White) },
+                title = { Text(stringResource(R.string.favorites_title), color = Color.Black) },
                 actions = {
                     LogoutButton(navController = navController, viewModel = viewModel)
                 }
@@ -122,7 +122,6 @@ fun FavoritesScreen(navController: androidx.navigation.NavController, viewModel:
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .background(Color(0xFF386C5F)) // ✅ Soft pastel background
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -143,7 +142,7 @@ fun FavoritesScreen(navController: androidx.navigation.NavController, viewModel:
                 )
             } else {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp) // ✅ More space between cards
+                    verticalArrangement = Arrangement.spacedBy(12.dp) //  More space between cards
                 ) {
                     items(favTrails) { trail ->
                         FavoriteTrailItem(trail = trail) {
@@ -160,12 +159,12 @@ fun FavoritesScreen(navController: androidx.navigation.NavController, viewModel:
 @Composable
 fun FavoriteTrailItem(trail: Trail, onClick: () -> Unit) {
     Card(
-        shape = RoundedCornerShape(16.dp), // ✅ Rounded edges for consistency
-        colors = CardDefaults.cardColors(containerColor = Color.White), // ✅ Clean white background
+        shape = RoundedCornerShape(16.dp), //  Rounded edges for consistency
+        colors = CardDefaults.cardColors(containerColor = Color.White), //  Clean white background
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .shadow(4.dp, RoundedCornerShape(16.dp)), // ✅ Light shadow for depth
+            .shadow(4.dp, RoundedCornerShape(16.dp)), //  Light shadow for depth
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Row(
@@ -174,7 +173,7 @@ fun FavoriteTrailItem(trail: Trail, onClick: () -> Unit) {
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // ✅ Trail Image / Placeholder
+            //  Trail Image / Placeholder
             if (trail.imageUrl.isBlank()) {
                 Box(
                     modifier = Modifier
@@ -201,11 +200,11 @@ fun FavoriteTrailItem(trail: Trail, onClick: () -> Unit) {
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // ✅ Text Section
+            //  Text Section
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                // 🔹 Trail Name (Bold)
+                //  Trail Name (Bold)
                 Text(
                     text = trail.name,
                     fontSize = 16.sp,
@@ -215,12 +214,12 @@ fun FavoriteTrailItem(trail: Trail, onClick: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // 🔹 Location with Pin Icon
+                //  Location with Pin Icon
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Place,
                         contentDescription = "Location Icon",
-                        tint = Color(0xFF19731B), // ✅ Dark Green
+                        tint = Color(0xFF19731B), //  Dark Green
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -233,7 +232,7 @@ fun FavoriteTrailItem(trail: Trail, onClick: () -> Unit) {
                 }
             }
 
-            // ✅ Favorite Heart Icon (Right Aligned)
+            //  Favorite Heart Icon (Right Aligned)
             Icon(
                 imageVector = Icons.Filled.Favorite,
                 contentDescription = stringResource(R.string.favorite_icon),
@@ -250,7 +249,7 @@ fun LogoutButton(navController: NavController, viewModel: LoginViewModel) {
         onClick = {
             viewModel.logout()
             navController.navigate("login") {
-                popUpTo("create") { inclusive = true } // 🔹 Remove all previous screens
+                popUpTo("create") { inclusive = true } //  Remove all previous screens
             }
         }
     ) {

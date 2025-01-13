@@ -78,7 +78,7 @@ fun TrailCreationScreen(navController: NavController) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFE6F2EF) // ✅ Soft pastel background
+        color = Color(0xFFE6F2EF) //  Soft pastel background
     ) {
         Column(
             modifier = Modifier
@@ -87,19 +87,22 @@ fun TrailCreationScreen(navController: NavController) {
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 🔹 Title
+            //  Title
             Text(
                 text = stringResource(R.string.create_trail),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = Color(0xFF19731B) // ✅ Dark green title
+                color = Color(0xFF19731B) // Dark green title
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔹 Trail Name Input
+            //  Trail Name Input
             OutlinedTextField(
                 value = trailName,
-                onValueChange = { trailName = it },
+                onValueChange = {
+                    trailName = it
+                    savedStateHandle?.set("trailName", it)
+                },
                 label = { Text(stringResource(R.string.name_of_trail)) },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
@@ -108,17 +111,20 @@ fun TrailCreationScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 🔹 Location Input with Icon
+            //  Location Input with Icon
             OutlinedTextField(
                 value = location,
-                onValueChange = { location = it },
+                onValueChange = {
+                    location = it
+                    savedStateHandle?.set("location", it)
+                },
                 label = { Text(stringResource(R.string.location)) },
                 singleLine = true,
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = "Location Icon",
-                        tint = Color(0xFF19731B) // ✅ Dark Green icon
+                        tint = Color(0xFF19731B) // Dark Green icon
                     )
                 },
                 shape = RoundedCornerShape(12.dp),
@@ -127,7 +133,7 @@ fun TrailCreationScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔹 Difficulty Selection
+            //  Difficulty Selection
             Text(
                 text = stringResource(R.string.difficulty),
                 fontSize = 18.sp,
@@ -142,20 +148,23 @@ fun TrailCreationScreen(navController: NavController) {
                 DifficultyRadioButton(
                     label = stringResource(R.string.easy),
                     selectedDifficulty = difficulty
-                ) { difficulty = it }
+                ) { difficulty = it
+                    savedStateHandle?.set("difficulty", it)}
                 DifficultyRadioButton(
                     label = stringResource(R.string.medium),
                     selectedDifficulty = difficulty
-                ) { difficulty = it }
+                ) { difficulty = it
+                    savedStateHandle?.set("difficulty", it)}
                 DifficultyRadioButton(
                     label = stringResource(R.string.hard),
                     selectedDifficulty = difficulty
-                ) { difficulty = it }
+                ) { difficulty = it
+                    savedStateHandle?.set("difficulty", it)}
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 🔹 Image Picker Button
+            //  Image Picker Button
             Button(
                 onClick = { imagePickerLauncher.launch("image/*") },
                 shape = RoundedCornerShape(12.dp),
@@ -168,7 +177,7 @@ fun TrailCreationScreen(navController: NavController) {
                 )
             }
 
-            // 🔹 Display Selected Image
+            //  Display Selected Image
             selectedImageUri?.let { uri ->
                 Spacer(modifier = Modifier.height(12.dp))
                 Image(
@@ -183,7 +192,7 @@ fun TrailCreationScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔹 Button to Open Waypoint Selection Screen
+            //  Button to Open Waypoint Selection Screen
             Button(
                 onClick = { navController.navigate("waypointSelection") },
                 shape = RoundedCornerShape(12.dp),
@@ -199,7 +208,7 @@ fun TrailCreationScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔹 Mini Map to Show Selected Waypoints
+            //  Mini Map to Show Selected Waypoints
             if (selectedWaypoints.isNotEmpty()) {
                 Text(
                     text = stringResource(R.string.waypoint_preview),
@@ -213,7 +222,7 @@ fun TrailCreationScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 🔹 Save Button
+            //  Save Button
             Button(
                 onClick = {
                     if (trailName.isNotBlank() && location.isNotBlank()) {
@@ -230,6 +239,7 @@ fun TrailCreationScreen(navController: NavController) {
                         ) { success ->
                             isSaving = false
                             val message = if (success) {
+                                showNotification(context, trailName)
                                 context.getString(R.string.trail_saved_success)
                             } else {
                                 context.getString(R.string.trail_saved_failed)
@@ -256,7 +266,7 @@ fun TrailCreationScreen(navController: NavController) {
     }
 }
 
-// 🔹 Styled Difficulty Radio Buttons
+//  Styled Difficulty Radio Buttons
 @Composable
 fun DifficultyRadioButton(label: String, selectedDifficulty: String, onSelection: (String) -> Unit) {
     Row(
@@ -265,12 +275,13 @@ fun DifficultyRadioButton(label: String, selectedDifficulty: String, onSelection
         RadioButton(
             selected = selectedDifficulty == label,
             onClick = { onSelection(label) },
-            colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF19731B)) // ✅ Dark Green selection
+            colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF19731B)) // Dark Green selection
         )
         Text(text = label, modifier = Modifier.padding(start = 4.dp), fontWeight = FontWeight.Medium)
     }
 }
 
+//  **Updated MiniMap UI
 @Composable
 fun MiniMap(waypoints: List<Pair<Double, Double>>) {
     val context = LocalContext.current
@@ -285,22 +296,22 @@ fun MiniMap(waypoints: List<Pair<Double, Double>>) {
             // Clear existing markers
             pointAnnotationManager?.deleteAll()
 
-            // Add markers for each waypoint
+            // Add markers for each waypoint with better styling
             waypoints.forEachIndexed { index, (lat, lng) ->
                 val point = Point.fromLngLat(lng, lat)
                 val pointAnnotationOptions = PointAnnotationOptions()
                     .withPoint(point)
-                    .withIconSize(1.5)
+                    .withIconSize(2.0) // Adjusted size
                     .withIconImage("marker-15")
-                    .withTextField((index + 1).toString()) // Label with numbers
+                    .withTextField((index + 1).toString()) // Label waypoints
                     .withTextSize(14.0)
-                    .withTextColor("#000000")
-                    .withTextOffset(listOf(0.0, 0.5))
+                    .withTextColor("#19731B") // Dark Green
+                    .withTextOffset(listOf(0.0, 1.2))
 
                 pointAnnotationManager?.create(pointAnnotationOptions)
             }
 
-            // Center map on first waypoint (if available)
+            //  Center map on first waypoint
             if (waypoints.isNotEmpty()) {
                 val firstPoint = waypoints.first()
                 mapboxMap.setCamera(
@@ -313,8 +324,17 @@ fun MiniMap(waypoints: List<Pair<Double, Double>>) {
         }
     }
 
-    Box(modifier = Modifier.height(200.dp).fillMaxWidth()) {
-        AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
+    // Better MiniMap Styling
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(220.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
+        }
     }
 }
 

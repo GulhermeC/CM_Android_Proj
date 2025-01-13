@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +19,7 @@ import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.example.gps.data.Trail
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import com.example.gps.R
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -50,77 +52,120 @@ fun TrailDetailsScreen(trail: Trail,navController: NavController) {
         }
     }
 
-    IconButton(onClick = { navController.popBackStack()  }) {
-        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-    }
-    Spacer(modifier = Modifier.height(16.dp))
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFE6F2EF) //  Soft pastel background
     ) {
-        // Trail Image
-        //println("Image URL in TrailDetailsScreen: ${trail.imageUrl}")
-        Image(
-            painter = rememberAsyncImagePainter(model = trail.imageUrl),
-            contentDescription = stringResource(R.string.trail_image),
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .clip(RoundedCornerShape(8.dp))
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Trail Name
-        Text(
-            text = trail.name,
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Location
-        Text(
-            text = stringResource(R.string.location) + ": " + trail.location,
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color.Gray
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Difficulty
-        Text(
-            text = stringResource(R.string.difficulty) + ": " + trail.difficulty,
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color.Gray
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Button to "Choose Trail" or similar
-        Button(
-            onClick = {
-                val waypointString = waypoints.joinToString(";") { "${it.first},${it.second}" } // Convert waypoints to a string
-                navController.navigate("userTrail/${trail.id}?waypoints=$waypointString")             },
-            modifier = Modifier.fillMaxWidth()
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(stringResource(R.string.choose_trail))
-        }
+            //  Back Button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
+                        tint = Color(0xFF19731B) //  Dark Green
+                    )
+                }
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-        if (waypoints.isNotEmpty()) {
+            // Trail Image with Improved Styling
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(6.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = trail.imageUrl),
+                    contentDescription = stringResource(R.string.trail_image),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            //  Trail Name
             Text(
-                text = stringResource(R.string.waypoints_label),
-                style = MaterialTheme.typography.titleLarge
+                text = trail.name,
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xFF19731B), //  Dark Green
+                textAlign = TextAlign.Center
             )
 
-            MiniMap(waypoints)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            //  Location
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = "Location Icon",
+                    tint = Color(0xFF19731B),
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = trail.location,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Gray
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            //  Difficulty
+            Text(
+                text = "${stringResource(R.string.difficulty)}: ${trail.difficulty}",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                color = Color.Black
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            //  Button to "Choose Trail"
+            Button(
+                onClick = {
+                    val waypointString =
+                        waypoints.joinToString(";") { "${it.first},${it.second}" } // Convert waypoints to a string
+                    navController.navigate("userTrail/${trail.id}?waypoints=$waypointString")
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B))
+            ) {
+                Text(
+                    stringResource(R.string.choose_trail),
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            //  MiniMap with Waypoints
+            if (waypoints.isNotEmpty()) {
+                Text(
+                    text = stringResource(R.string.waypoints_label),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.Black
+                )
+
+                MiniMap(waypoints)
+            }
         }
     }
 }

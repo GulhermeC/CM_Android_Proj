@@ -115,7 +115,7 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)) {
-        // 🔹 Language Selector Aligned to the Right
+        // Language Selector Aligned to the Right
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
@@ -128,7 +128,7 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 🔹 Search Bar with Rounded Corners
+        //  Search Bar with Rounded Corners
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
@@ -153,7 +153,7 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 🔹 Loading or Error State with Styling
+        //  Loading or Error State with Styling
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -167,7 +167,7 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
                 fontWeight = FontWeight.Bold
             )
         } else {
-            // 🔹 Styled List of Trails
+            //  Styled List of Trails
             val filteredTrails = trailList.filter {
                 it.name.contains(searchQuery.text, ignoreCase = true) ||
                         it.location.contains(searchQuery.text, ignoreCase = true)

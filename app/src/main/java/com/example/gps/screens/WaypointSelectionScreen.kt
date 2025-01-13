@@ -12,6 +12,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -39,6 +40,8 @@ import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.maps.plugin.locationcomponent.location
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.example.gps.R
 
 @SuppressLint("Lifecycle")
@@ -86,7 +89,11 @@ fun WaypointSelectionScreen(navController: NavHostController) {
         onResult = { isGranted ->
             hasLocationPermission = isGranted
             if (!isGranted) {
-                Toast.makeText(context, context.getString(R.string.permission_denied), Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.permission_denied),
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     )
@@ -124,8 +131,14 @@ fun WaypointSelectionScreen(navController: NavHostController) {
                 }
                 // Initialize the annotation manager for waypoints
                 pointAnnotationManager = mapView.annotations.createPointAnnotationManager()
-                if(waypointList.isEmpty())
-                    loadWaypoints(db, pointAnnotationManager!!, waypointList, context, waypointCounter)
+                if (waypointList.isEmpty())
+                    loadWaypoints(
+                        db,
+                        pointAnnotationManager!!,
+                        waypointList,
+                        context,
+                        waypointCounter
+                    )
 
             }
         }
@@ -154,13 +167,13 @@ fun WaypointSelectionScreen(navController: NavHostController) {
                     }
                 }
 
-                // Control Buttons
+                // Control Buttons (Updated)
                 Column(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp) // Added more spacing
                 ) {
                     Button(
                         onClick = {
@@ -173,74 +186,156 @@ fun WaypointSelectionScreen(navController: NavHostController) {
 
                             navController.popBackStack()
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B))
                     ) {
-                        Text(stringResource(R.string.done_save_waypoints))
+                        Text(
+                            stringResource(R.string.done_save_waypoints),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
 
                     OutlinedButton(
-                        onClick = { showDialog = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
+                        onClick = { showDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF19731B))
                     ) {
-                        Text(stringResource(R.string.clear_waypoints))
+                        Text(stringResource(R.string.clear_waypoints), fontWeight = FontWeight.Bold)
                     }
+                }
 
-                    if(showDialog){
-                        AlertDialog(
-                            onDismissRequest = { showDialog = false },
-                            title = { Text(stringResource(R.string.confirm_deletion)) },
-                            text = { Text(stringResource(R.string.delete_all_waypoints_message)) },
-                            confirmButton = {
-                                Button(onClick = {
+                // ✅ Improved Delete Confirmation Dialog
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = {
+                            Text(
+                                text = stringResource(R.string.confirm_deletion),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+                        },
+                        text = {
+                            Text(
+                                text = stringResource(R.string.delete_all_waypoints_message),
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
                                     deleteAllWaypointsFromFirebase(db, context)
                                     pointAnnotationManager?.deleteAll()
                                     waypointList.clear()
                                     waypointCounter.intValue = 1
                                     showDialog = false
-                                }) {
-                                    Text(stringResource(R.string.yes_delete))
-                                }
-                            },
-                            dismissButton = {
-                                Button(onClick = { showDialog = false }) {
-                                    Text(stringResource(R.string.cancel))
-                                }
-                            }
-                        )
-                    }
-
-                }
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .border(1.dp, Color.Gray)
-                        .padding(8.dp)
-                ) {
-                    items(waypointList) { waypoint ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .background(Color.LightGray)
-                                .padding(8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = stringResource(R.string.waypoint_added_2, waypoint.first, waypoint.second))
-
-                            IconButton(
-                                onClick = { removeWaypoint(waypoint, waypointList, pointAnnotationManager) }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                                shape = RoundedCornerShape(12.dp)
                             ) {
-                                Icon(Icons.Default.Close, contentDescription = "Remove Waypoint", tint = Color.Red)
+                                Text(
+                                    stringResource(R.string.yes_delete),
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        },
+                        dismissButton = {
+                            OutlinedButton(
+                                onClick = { showDialog = false },
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(stringResource(R.string.cancel), fontWeight = FontWeight.Bold)
                             }
                         }
-                    }
+                    )
                 }
+
+//                // Updated Waypoint List UI
+//                Card(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(200.dp)
+//                        .align(Alignment.BottomStart)
+//                        .padding(bottom = 80.dp), // Adds spacing above buttons
+//                    shape = RoundedCornerShape(12.dp),
+//                    elevation = CardDefaults.cardElevation(6.dp)
+//                ) {
+//                    Column(
+//                        modifier = Modifier.padding(12.dp)
+//                    ) {
+//                        Text(
+//                            text = "List",
+//                            fontWeight = FontWeight.Bold,
+//                            fontSize = 16.sp,
+//                            color = Color.Black
+//                        )
+//                        Spacer(modifier = Modifier.height(8.dp))
+//
+//                        LazyColumn(
+//                            modifier = Modifier.fillMaxWidth()
+//                        ) {
+//                            items(waypointList) { waypoint ->
+//                                Card(
+//                                    modifier = Modifier
+//                                        .fillMaxWidth()
+//                                        .padding(vertical = 4.dp),
+//                                    shape = RoundedCornerShape(8.dp),
+//                                    colors = CardDefaults.cardColors(
+//                                        containerColor = Color(
+//                                            0xFFF0F0F0
+//                                        )
+//                                    )
+//                                ) {
+//                                    Row(
+//                                        modifier = Modifier
+//                                            .fillMaxWidth()
+//                                            .padding(12.dp),
+//                                        horizontalArrangement = Arrangement.SpaceBetween,
+//                                        verticalAlignment = Alignment.CenterVertically
+//                                    ) {
+//                                        Text(
+//                                            text = stringResource(
+//                                                R.string.clear_waypoints,
+//                                                waypoint.first
+//                                            ),
+//                                            fontSize = 14.sp,
+//                                            color = Color.Black
+//                                        )
+//
+//                                        IconButton(
+//                                            onClick = {
+//                                                removeWaypoint(
+//                                                    waypoint,
+//                                                    waypointList,
+//                                                    pointAnnotationManager
+//                                                )
+//                                            },
+//                                            modifier = Modifier.size(24.dp)
+//                                        ) {
+//                                            Icon(
+//                                                Icons.Default.Close,
+//                                                contentDescription = "Delete",
+//                                                tint = Color.Red
+//                                            )
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
             }
         } else {
-            Button(onClick = { requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }) {
-                Text(stringResource(R.string.request_permission))
+            Button(
+                onClick = { requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B))
+            ) {
+                Text(stringResource(R.string.request_permission), color = Color.White)
             }
         }
     }
@@ -410,7 +505,7 @@ private fun loadWaypoints(
                 }
             }
 
-            // ✅ Update waypointCounter to be the next available number
+            // Update waypointCounter to be the next available number
             waypointCounter.value = waypointList.size + 1
 
             Toast.makeText(

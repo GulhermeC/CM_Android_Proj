@@ -141,7 +141,7 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
                 // Initialize the annotation manager for waypoints
                 pointAnnotationManager = mapView.annotations.createPointAnnotationManager()
                 // Add waypoints to the map
-                // 🔹 Add waypoints to the map
+                //  Add waypoints to the map
                 waypointList.forEach { (lat, lng) ->
                     val point = Point.fromLngLat(lng, lat)
                     val isCleared = clearedWaypoints.contains(Pair(lat, lng)) // Check if cleared
@@ -162,26 +162,26 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
         }
     }
 
-    // 🔹 Check if User is Near Any Waypoint
+    //  Check if User is Near Any Waypoint
     LaunchedEffect(userLocation) {
         userLocation?.let { (userLat, userLng) ->
             waypointList.filterNot { clearedWaypoints.contains(it) } // Only check uncleared waypoints
                 .forEach { (waypointLat, waypointLng) ->
                     val distance = calculateDistance(userLat, userLng, waypointLat, waypointLng)
-                    if (distance < 1) { // 🔹 10 meters threshold
+                    if (distance < 1) { //  10 meters threshold
                         clearedWaypoints = clearedWaypoints + Pair(waypointLat, waypointLng)
                     }
                 }
 
-            // 🔹 Stop timer when all waypoints are reached
+            //  Stop timer when all waypoints are reached
             if (clearedWaypoints.size == waypointList.size && isRunning) {
                 isRunning = false
-                println("✅ All waypoints cleared! Timer stopped.")
+                println(" All waypoints cleared! Timer stopped.")
             }
         }
     }
 
-// 🔹 Improved UI Layout with Soft Colors
+//  Improved UI Layout with Soft Colors
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -190,7 +190,7 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 🔹 Header Section
+        //  Header Section
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -214,13 +214,13 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
             )
         }
 
-        // 🔹 Map Section with Rounded Borders
+        //  Map Section with Rounded Borders
         Card(
             shape = RoundedCornerShape(12.dp),
             elevation = CardDefaults.cardElevation(6.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp)
+                .height(350.dp)
         ) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
@@ -228,7 +228,7 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 🔹 Timer Display with Simple Styling
+        //  Timer Display with Simple Styling
         Text(
             text = formatTime(elapsedTime),
             style = TextStyle(
@@ -244,7 +244,7 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 🔹 Start Trail Button with Adjusted Height
+        //  Start Trail Button with Adjusted Height
         Button(
             onClick = {
                 if (isRunning) {
@@ -261,9 +261,9 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 32.dp)
-                .height(60.dp), // 🔹 Increased height for better text fitting
+                .height(60.dp), //  Increased height for better text fitting
             shape = RoundedCornerShape(12.dp),
-            contentPadding = PaddingValues(vertical = 12.dp) // 🔹 Ensures internal padding does not shrink text
+            contentPadding = PaddingValues(vertical = 12.dp) //  Ensures internal padding does not shrink text
         ) {
             Icon(
                 if (isRunning) Icons.Filled.Check else Icons.Filled.PlayArrow,
@@ -282,7 +282,7 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
             )
         }
 
-        // 🔹 Timer Update (Updates every second when running)
+        //  Timer Update (Updates every second when running)
         if (isRunning) {
             LaunchedEffect(isRunning) {
                 while (isRunning) {
@@ -294,7 +294,7 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
     }
 }
 
-// 🔹 Function to Calculate Distance Between Two GPS Coordinates
+//  Function to Calculate Distance Between Two GPS Coordinates
 private fun calculateDistance(
     lat1: Double, lon1: Double, lat2: Double, lon2: Double
 ): Double {

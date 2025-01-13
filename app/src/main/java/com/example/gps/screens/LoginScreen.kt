@@ -62,11 +62,11 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFE6F2EF) // ✅ Soft pastel background
+        color = Color(0xFFE6F2EF) //  Soft pastel background
     ) {
         Column(
             modifier = Modifier
-                .padding(24.dp) // ✅ More padding for better spacing
+                .padding(24.dp) //  More padding for better spacing
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -77,7 +77,7 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel) {
                 onValueChange = { username.value = it },
                 label = { Text(stringResource(R.string.email)) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners for modern feel
+                shape = RoundedCornerShape(12.dp), //  Rounded corners for modern feel
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -91,7 +91,7 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel) {
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners
+                shape = RoundedCornerShape(12.dp), //  Rounded corners
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -112,7 +112,7 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel) {
                 Checkbox(
                     checked = rememberMe.value,
                     onCheckedChange = { rememberMe.value = it },
-                    colors = CheckboxDefaults.colors(checkedColor = Color(0xFF19731B)) // ✅ Dark Green Checkbox
+                    colors = CheckboxDefaults.colors(checkedColor = Color(0xFF19731B)) //  Dark Green Checkbox
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Remember Me", color = Color.Black)
@@ -151,8 +151,8 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel) {
                     }
                 },
                 enabled = !loading.value,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B)), // ✅ Dark Green Button
-                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B)), //  Dark Green Button
+                shape = RoundedCornerShape(12.dp), //  Rounded corners
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -166,16 +166,16 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 🔹 Register Button
+            // Register Button
             Button(
                 onClick = { navController.navigate("register") },
                 enabled = !loading.value,
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners
+                shape = RoundedCornerShape(12.dp), //  Rounded corners
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp) // ✅ Soft shadow
+                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp) //  Soft shadow
             ) {
                 Text(
                     stringResource(R.string.register),
