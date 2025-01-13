@@ -74,5 +74,11 @@
     <string name="lang_pt">Português</string>
     <string name="lang_es">Español</string>
     <string name="select_language">Select Language</string>
+    <string name="favorites_title">Your Favorite Trails</string>
+    <string name="no_favorites">No favorites found!</string>
+    <string name="error_user_not_logged_in">User not logged in</string>
+    <string name="error_generic">Error: %1$s</string>
+    <string name="favorite_icon">Favorite</string>
+    <string name="unknown">Unknown</string>
 
 </resources>

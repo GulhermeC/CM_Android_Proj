@@ -74,4 +74,10 @@
     <string name="lang_pt">Portugués</string>
     <string name="lang_es">Español</string>
     <string name="select_language">Seleccionar idioma</string>
+    <string name="favorites_title">Tus Rutas Favoritas</string>
+    <string name="no_favorites">¡No se encontraron rutas favoritas!</string>
+    <string name="error_user_not_logged_in">El usuario no está conectado</string>
+    <string name="error_generic">Error: %1$s</string>
+    <string name="favorite_icon">Favorito</string>
+    <string name="unknown">Desconocido</string>
 </resources>

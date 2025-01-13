@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -17,9 +18,9 @@ import com.example.gps.R
 @Composable
 fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
-        BottomNavItem(stringResource(R.string.map), "map", Icons.Filled.Place),
-        BottomNavItem(stringResource(R.string.create), "create", Icons.Filled.Add),
-        BottomNavItem(stringResource(R.string.browse), "browse", Icons.Filled.Search)
+        BottomNavItem("", "browse", Icons.Filled.Search),
+        BottomNavItem("", "create", Icons.Filled.Add),
+        BottomNavItem("", "favorites", Icons.Filled.Favorite)
     )
 
     NavigationBar {
@@ -27,7 +28,7 @@ fun BottomNavBar(navController: NavHostController) {
         items.forEach { item ->
             NavigationBarItem(
                 icon = { Icon(item.icon, contentDescription = item.title) },
-                label = { Text(item.title) },
+                label = {},
                 selected = currentRoute == item.route,
                 onClick = {
                     navController.navigate(item.route) {
