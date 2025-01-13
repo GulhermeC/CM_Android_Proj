@@ -105,8 +105,8 @@ fun TrailDetailsScreen(trail: Trail,navController: NavController) {
         // Button to "Choose Trail" or similar
         Button(
             onClick = {
-                // Add functionality for choosing this trail
-            },
+                val waypointString = waypoints.joinToString(";") { "${it.first},${it.second}" } // Convert waypoints to a string
+                navController.navigate("userTrail/${trail.id}?waypoints=$waypointString")             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.choose_trail))
