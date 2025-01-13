@@ -17,12 +17,15 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.example.gps.navigation.BottomNavBar
+import android.net.Uri
 import com.example.gps.MapScreen
 import com.example.gps.TrailCreationScreen
 import com.google.firebase.appcheck.FirebaseAppCheck
@@ -108,7 +111,30 @@ fun NavHostContainer(navController: NavHostController, modifier: Modifier) {
     ) {
         composable("map") { MapScreen() }
         composable("create") { TrailCreationScreen( navController) }
-        composable("browse") { BrowseScreen() }
+        composable("browse") {
+            BrowseScreen { trail ->
+                navController.navigate(
+                    "details/${Uri.encode(trail.name)}/${Uri.encode(trail.location)}/${Uri.encode(trail.difficulty)}/${Uri.encode(trail.imageUrl)}"
+                )
+            }
+        }
+        composable(
+            "details/{name}/{location}/{difficulty}/{imageUrl}",
+            arguments = listOf(
+                navArgument("name") { type = NavType.StringType },
+                navArgument("location") { type = NavType.StringType },
+                navArgument("difficulty") { type = NavType.StringType },
+                navArgument("imageUrl") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val name = Uri.decode(backStackEntry.arguments?.getString("name") ?: "")
+            val location = Uri.decode(backStackEntry.arguments?.getString("location") ?: "")
+            val difficulty = Uri.decode(backStackEntry.arguments?.getString("difficulty") ?: "")
+            val imageUrl = backStackEntry.arguments?.getString("imageUrl") ?: ""
+
+            val trail = Trail(name, location, difficulty, imageUrl)
+            TrailDetailsScreen(trail)
+        }
         composable("waypointSelection") { WaypointSelectionScreen(navController) }
     }
 }
