@@ -38,10 +38,21 @@ import com.example.gps.showNotification
 
 @Composable
 fun TrailCreationScreen(navController: NavController) {
-    var trailName by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
-    var difficulty by remember { mutableStateOf("Easy") }
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+
+    var trailName by remember {
+        mutableStateOf(savedStateHandle?.get<String>("trailName") ?: "")
+    }
+    var location by remember {
+        mutableStateOf(savedStateHandle?.get<String>("location") ?: "")
+    }
+    var difficulty by remember {
+        mutableStateOf(savedStateHandle?.get<String>("difficulty") ?: "Easy")
+    }
+    var selectedImageUri by remember {
+        mutableStateOf(savedStateHandle?.get<Uri>("selectedImageUri"))
+    }
+
     var isSaving by remember { mutableStateOf(false) }
     val selectedWaypoints = navController
         .currentBackStackEntry
@@ -79,7 +90,10 @@ fun TrailCreationScreen(navController: NavController) {
         // Trail Name Input
         OutlinedTextField(
             value = trailName,
-            onValueChange = { trailName = it },
+            onValueChange = {
+                trailName = it
+                savedStateHandle?.set("trailName", it)
+            },
             label = { Text(stringResource(R.string.name_of_trail)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
@@ -90,8 +104,11 @@ fun TrailCreationScreen(navController: NavController) {
         // Location Input with Icon
         OutlinedTextField(
             value = location,
-            onValueChange = { location = it },
-            label = { Text(stringResource(R.string.location))},
+            onValueChange = {
+                location = it
+                savedStateHandle?.set("location", it)
+            },
+            label = { Text(stringResource(R.string.location)) },
             singleLine = true,
             trailingIcon = {
                 Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Location Icon")
@@ -112,9 +129,18 @@ fun TrailCreationScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            DifficultyRadioButton(label = stringResource(R.string.easy), selectedDifficulty = difficulty) { difficulty = it }
-            DifficultyRadioButton(label = stringResource(R.string.medium), selectedDifficulty = difficulty) { difficulty = it }
-            DifficultyRadioButton(label = stringResource(R.string.hard), selectedDifficulty = difficulty) { difficulty = it }
+            DifficultyRadioButton(label = stringResource(R.string.easy), selectedDifficulty = difficulty) {
+                difficulty = it
+                savedStateHandle?.set("difficulty", it)
+            }
+            DifficultyRadioButton(label = stringResource(R.string.medium), selectedDifficulty = difficulty) {
+                difficulty = it
+                savedStateHandle?.set("difficulty", it)
+            }
+            DifficultyRadioButton(label = stringResource(R.string.hard), selectedDifficulty = difficulty) {
+                difficulty = it
+                savedStateHandle?.set("difficulty", it)
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -139,7 +165,13 @@ fun TrailCreationScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Button to open Waypoint Selection Screen
-        Button(onClick = { navController.navigate("waypointSelection") }) {
+        Button(onClick = {
+            navController.currentBackStackEntry?.savedStateHandle?.set("trailName", trailName)
+            navController.currentBackStackEntry?.savedStateHandle?.set("location", location)
+            navController.currentBackStackEntry?.savedStateHandle?.set("difficulty", difficulty)
+            navController.currentBackStackEntry?.savedStateHandle?.set("selectedImageUri", selectedImageUri)
+            navController.navigate("waypointSelection")
+        }) {
             Text(stringResource(R.string.select_waypoints))
         }
 
