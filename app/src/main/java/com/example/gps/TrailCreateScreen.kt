@@ -1,7 +1,5 @@
 package com.example.gps
 
-import android.app.Activity
-import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,23 +13,38 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import coil3.compose.rememberAsyncImagePainter
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import androidx.compose.ui.platform.LocalContext
 import android.content.Context
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.navigation.NavController
+import com.mapbox.geojson.Point
+import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.Style
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
+
 
 @Composable
-fun TrailCreationScreen() {
+fun TrailCreationScreen(navController: NavController) {
     var trailName by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var difficulty by remember { mutableStateOf("Easy") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var isSaving by remember { mutableStateOf(false) }
+    val selectedWaypoints = navController
+        .currentBackStackEntry
+        ?.savedStateHandle
+        ?.get<List<Pair<Double, Double>>>("waypoints") ?: emptyList()
+
     val firestore = FirebaseFirestore.getInstance()
     val storage = FirebaseStorage.getInstance()
     val context = LocalContext.current
@@ -115,6 +128,22 @@ fun TrailCreationScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Button to open Waypoint Selection Screen
+        Button(onClick = { navController.navigate("waypointSelection") }) {
+            Text("Select Waypoints")
+        }
+
+
+        // **Mini Map to Show Selected Waypoints**
+        if (selectedWaypoints.isNotEmpty()) {
+            Text("Waypoint Preview:", fontSize = 16.sp, color = Color.Black)
+            MiniMap(selectedWaypoints)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         // Save Button
         Button(
             onClick = {
@@ -124,6 +153,7 @@ fun TrailCreationScreen() {
                         trailName,
                         location,
                         difficulty,
+                        selectedWaypoints,
                         selectedImageUri,
                         firestore,
                         storage,
@@ -161,10 +191,58 @@ fun DifficultyRadioButton(label: String, selectedDifficulty: String, onSelection
     }
 }
 
+@Composable
+fun MiniMap(waypoints: List<Pair<Double, Double>>) {
+    val context = LocalContext.current
+    val mapView = rememberMapViewWithLifecycle()
+    val mapboxMap = remember { mapView.getMapboxMap() }
+    var pointAnnotationManager by remember { mutableStateOf<PointAnnotationManager?>(null) }
+
+    LaunchedEffect(waypoints) {
+        mapboxMap.loadStyleUri(Style.MAPBOX_STREETS) { style ->
+            pointAnnotationManager = mapView.annotations.createPointAnnotationManager()
+
+            // Clear existing markers
+            pointAnnotationManager?.deleteAll()
+
+            // Add markers for each waypoint
+            waypoints.forEachIndexed { index, (lat, lng) ->
+                val point = Point.fromLngLat(lng, lat)
+                val pointAnnotationOptions = PointAnnotationOptions()
+                    .withPoint(point)
+                    .withIconSize(1.5)
+                    .withIconImage("marker-15")
+                    .withTextField((index + 1).toString()) // Label with numbers
+                    .withTextSize(14.0)
+                    .withTextColor("#000000")
+                    .withTextOffset(listOf(0.0, 0.5))
+
+                pointAnnotationManager?.create(pointAnnotationOptions)
+            }
+
+            // Center map on first waypoint (if available)
+            if (waypoints.isNotEmpty()) {
+                val firstPoint = waypoints.first()
+                mapboxMap.setCamera(
+                    CameraOptions.Builder()
+                        .center(Point.fromLngLat(firstPoint.second, firstPoint.first))
+                        .zoom(13.0)
+                        .build()
+                )
+            }
+        }
+    }
+
+    Box(modifier = Modifier.height(200.dp).fillMaxWidth()) {
+        AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
+    }
+}
+
 private fun saveTrail(
     trailName: String,
     location: String,
     difficulty: String,
+    selectedWaypoints: List<Pair<Double, Double>>,
     imageUri: Uri?,
     firestore: FirebaseFirestore,
     storage: FirebaseStorage,
@@ -177,16 +255,16 @@ private fun saveTrail(
         imageRef.putFile(imageUri)
             .addOnSuccessListener {
                 imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
-                    saveTrailData(trailName, location, difficulty, downloadUrl.toString(), firestore, onComplete)
+                    saveTrailData(trailName, location, difficulty, selectedWaypoints, downloadUrl.toString(), firestore, onComplete)
                 }.addOnFailureListener {
                     onComplete(false)
                 }
             }
             .addOnFailureListener {
-                onComplete(false)
+                saveTrailData(trailName, location, difficulty, selectedWaypoints, null, firestore, onComplete) // Fallback
             }
     } else {
-        saveTrailData(trailName, location, difficulty, null, firestore, onComplete)
+        saveTrailData(trailName, location, difficulty, selectedWaypoints, null, firestore, onComplete)
     }
 }
 
@@ -194,6 +272,7 @@ private fun saveTrailData(
     trailName: String,
     location: String,
     difficulty: String,
+    selectedWaypoints: List<Pair<Double, Double>>,
     imageUrl: String?,
     firestore: FirebaseFirestore,
     onComplete: (Boolean) -> Unit
@@ -202,6 +281,7 @@ private fun saveTrailData(
         "name" to trailName,
         "location" to location,
         "difficulty" to difficulty,
+        "waypoints" to selectedWaypoints.map { mapOf("latitude" to it.first, "longitude" to it.second) },
         "imageUrl" to imageUrl
     )
 

@@ -68,31 +68,31 @@ import com.google.firebase.auth.ktx.auth
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import kotlinx.coroutines.launch
 
-@SuppressLint("Lifecycle")
-@Composable
-fun rememberMapViewWithLifecycle(): MapView {
-    val context = LocalContext.current
-    val mapView = remember {
-        MapView(
-            context = context,
-            mapInitOptions = MapInitOptions(
-                context = context,
-                resourceOptions = ResourceOptions.Builder()
-                    .accessToken("sk.eyJ1IjoicnVpdWEiLCJhIjoiY200bXM4czU5MDBwZDJrcjJsZW9qNzVjOCJ9.TlDHWxGJe7rdI03udVud3w")
-                    .build()
-            )
-        )
-    }
-
-    DisposableEffect(mapView) {
-        mapView.onStart()
-        onDispose {
-            mapView.onStop()
-            mapView.onDestroy()
-        }
-    }
-    return mapView
-}
+//@SuppressLint("Lifecycle")
+//@Composable
+//fun rememberMapViewWithLifecycle(): MapView {
+//    val context = LocalContext.current
+//    val mapView = remember {
+//        MapView(
+//            context = context,
+//            mapInitOptions = MapInitOptions(
+//                context = context,
+//                resourceOptions = ResourceOptions.Builder()
+//                    .accessToken("sk.eyJ1IjoicnVpdWEiLCJhIjoiY200bXM4czU5MDBwZDJrcjJsZW9qNzVjOCJ9.TlDHWxGJe7rdI03udVud3w")
+//                    .build()
+//            )
+//        )
+//    }
+//
+//    DisposableEffect(mapView) {
+//        mapView.onStart()
+//        onDispose {
+//            mapView.onStop()
+//            mapView.onDestroy()
+//        }
+//    }
+//    return mapView
+//}
 
 @SuppressLint("ClickableViewAccessibility")
 @Composable
@@ -134,7 +134,6 @@ fun MapScreen() {
 
     LaunchedEffect(hasLocationPermission) {
         if (hasLocationPermission) {
-            if (hasLocationPermission) {
 
                 mapboxMap.loadStyleUri(Style.MAPBOX_STREETS) { style ->
                     // Enable location component
@@ -158,7 +157,6 @@ fun MapScreen() {
                     // Initialize point annotation manager
                     pointAnnotationManager = mapView.annotations.createPointAnnotationManager()
                 }
-            }
         }
     }
 
