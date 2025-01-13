@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -21,10 +22,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavController
+import com.example.gps.viewmodels.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavoritesScreen(navController: androidx.navigation.NavController) {
+fun FavoritesScreen(navController: androidx.navigation.NavController, viewModel: LoginViewModel) {
     val user = FirebaseAuth.getInstance().currentUser
     val firestore = FirebaseFirestore.getInstance()
 
@@ -64,10 +67,10 @@ fun FavoritesScreen(navController: androidx.navigation.NavController) {
                                     doc?.let {
                                         val name = it.getString("name")
                                         val location = it.getString("location")
-                                        val imageUrl = it.getString("imageUrl")
+                                        val imageUrl = it.getString("imageUrl") ?: ""
                                         val difficulty = it.getString("difficulty")
 
-                                        if (!name.isNullOrEmpty() && !location.isNullOrEmpty() && !imageUrl.isNullOrEmpty()) {
+                                        if (!name.isNullOrEmpty() && !location.isNullOrEmpty()) {
                                             Trail(
                                                 id = doc.id,
                                                 name = name,
@@ -101,7 +104,11 @@ fun FavoritesScreen(navController: androidx.navigation.NavController) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.favorites_title)) })
+            TopAppBar(title = { Text(stringResource(R.string.favorites_title)) },
+                actions = {
+                    LogoutButton(navController = navController, viewModel = viewModel)
+                }
+            )
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
@@ -162,13 +169,24 @@ fun FavoriteTrailItem(trail: Trail, onClick: () -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Row {
-                Image(
-                    painter = rememberAsyncImagePainter(model = trail.imageUrl),
-                    contentDescription = stringResource(R.string.trail_image),
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                )
+                if (trail.imageUrl.isBlank()) {
+                    // Show a placeholder icon if no image is available
+                    Icon(
+                        imageVector = Icons.Default.LocationOn, // Material Design icon for placeholder
+                        contentDescription = stringResource(R.string.trail_image_placeholder),
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                } else {
+                    Image(
+                        painter = rememberAsyncImagePainter(model = trail.imageUrl),
+                        contentDescription = stringResource(R.string.trail_image),
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                }
 
                 Spacer(modifier = Modifier.width(8.dp))
 
@@ -184,3 +202,16 @@ fun FavoriteTrailItem(trail: Trail, onClick: () -> Unit) {
     }
 }
 
+@Composable
+fun LogoutButton(navController: NavController, viewModel: LoginViewModel) {
+    Button(
+        onClick = {
+            viewModel.logout()
+            navController.navigate("login") {
+                popUpTo("create") { inclusive = true } // 🔹 Remove all previous screens
+            }
+        }
+    ) {
+        Text("Logout")
+    }
+}

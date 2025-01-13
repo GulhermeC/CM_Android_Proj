@@ -80,4 +80,5 @@
     <string name="error_generic">Erro: %1$s</string>
     <string name="favorite_icon">Favorito</string>
     <string name="unknown">Desconhecido</string>
+    <string name="trail_image_placeholder">Espaço reservado para a imagem da rota</string>
 </resources>

@@ -177,7 +177,7 @@ fun NavHostContainer(navController: NavHostController, modifier: Modifier,startD
         composable("login") { LoginScreen(navController, viewModel) }
         composable("register") { RegisterScreen(navController) }
         composable("map") { MapScreen() }
-        composable("favorites") { FavoritesScreen(navController) }
+        composable("favorites") { FavoritesScreen(navController, viewModel) }
         composable("create") { TrailCreationScreen( navController) }
         composable("browse") {
             BrowseScreen (){ trail ->

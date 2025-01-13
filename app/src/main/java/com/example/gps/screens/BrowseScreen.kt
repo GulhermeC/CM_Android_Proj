@@ -297,16 +297,4 @@ fun updateLocale(context: Context, languageCode: String) {
     (context as? Activity)?.recreate()
 }
 
-@Composable
-fun LogoutButton(navController: NavController, viewModel: LoginViewModel) {
-    Button(
-        onClick = {
-            viewModel.logout()
-            navController.navigate("login") {
-                popUpTo("create") { inclusive = true } // 🔹 Remove all previous screens
-            }
-        }
-    ) {
-        Text("Logout")
-    }
-}
+

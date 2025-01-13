@@ -80,5 +80,6 @@
     <string name="error_generic">Error: %1$s</string>
     <string name="favorite_icon">Favorite</string>
     <string name="unknown">Unknown</string>
+    <string name="trail_image_placeholder">Placeholder for trail image</string>
 
 </resources>
