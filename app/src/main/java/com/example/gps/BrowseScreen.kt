@@ -27,7 +27,6 @@ import coil3.compose.rememberAsyncImagePainter
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.gps.R
 import com.example.gps.data.Trail
-import android.content.Context
 import androidx.navigation.NavController
 import java.util.Locale
 import kotlinx.parcelize.Parcelize
@@ -265,7 +264,9 @@ fun updateLocale(context: Context, languageCode: String) {
     config.setLocale(locale)
     context.createConfigurationContext(config)
     context.resources.updateConfiguration(config, context.resources.displayMetrics)
-    
+    (context as? Activity)?.recreate()
+}
+
 @Composable
 fun LogoutButton(navController: NavController, viewModel: LoginViewModel) {
     Button(
@@ -278,3 +279,4 @@ fun LogoutButton(navController: NavController, viewModel: LoginViewModel) {
     ) {
         Text("Logout")
     }
+}
