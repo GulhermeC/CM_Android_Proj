@@ -1,4 +1,4 @@
-package com.example.gps
+package com.example.gps.screens
 
 import android.net.Uri
 import android.widget.Toast
@@ -20,8 +20,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import androidx.compose.ui.platform.LocalContext
 import android.content.Context
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.mapbox.geojson.Point
@@ -34,6 +32,7 @@ import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import com.example.gps.R
 
 @Composable
 fun TrailCreationScreen(navController: NavController) {
