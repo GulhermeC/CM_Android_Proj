@@ -99,7 +99,10 @@ fun TrailCreationScreen(navController: NavController) {
             // 🔹 Trail Name Input
             OutlinedTextField(
                 value = trailName,
-                onValueChange = { trailName = it },
+                onValueChange = {
+                    trailName = it
+                    savedStateHandle?.set("trailName", it)
+                },
                 label = { Text(stringResource(R.string.name_of_trail)) },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
@@ -111,7 +114,10 @@ fun TrailCreationScreen(navController: NavController) {
             // 🔹 Location Input with Icon
             OutlinedTextField(
                 value = location,
-                onValueChange = { location = it },
+                onValueChange = {
+                    location = it
+                    savedStateHandle?.set("location", it)
+                },
                 label = { Text(stringResource(R.string.location)) },
                 singleLine = true,
                 trailingIcon = {
@@ -142,22 +148,28 @@ fun TrailCreationScreen(navController: NavController) {
                 DifficultyRadioButton(
                     label = stringResource(R.string.easy),
                     selectedDifficulty = difficulty
-                ) { difficulty = it }
+                ) { difficulty = it
+                    savedStateHandle?.set("difficulty", it)}
                 DifficultyRadioButton(
                     label = stringResource(R.string.medium),
                     selectedDifficulty = difficulty
-                ) { difficulty = it }
+                ) { difficulty = it
+                    savedStateHandle?.set("difficulty", it)}
                 DifficultyRadioButton(
                     label = stringResource(R.string.hard),
                     selectedDifficulty = difficulty
-                ) { difficulty = it }
+                ) { difficulty = it
+                    savedStateHandle?.set("difficulty", it)}
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // 🔹 Image Picker Button
             Button(
-                onClick = { imagePickerLauncher.launch("image/*") },
+                onClick = {
+                    imagePickerLauncher.launch("image/*")
+                    savedStateHandle?.set("selectedImageUri", selectedImageUri)
+                },
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B))
             ) {
@@ -230,6 +242,7 @@ fun TrailCreationScreen(navController: NavController) {
                         ) { success ->
                             isSaving = false
                             val message = if (success) {
+                                showNotification(context, trailName)
                                 context.getString(R.string.trail_saved_success)
                             } else {
                                 context.getString(R.string.trail_saved_failed)
