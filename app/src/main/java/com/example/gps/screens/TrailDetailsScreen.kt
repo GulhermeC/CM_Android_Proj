@@ -1,4 +1,4 @@
-package com.example.gps
+package com.example.gps.screens
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -18,6 +18,7 @@ import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.example.gps.data.Trail
 import androidx.compose.ui.res.stringResource
+import com.example.gps.R
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable

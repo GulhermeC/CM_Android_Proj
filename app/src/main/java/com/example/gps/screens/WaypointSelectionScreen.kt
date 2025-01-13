@@ -1,4 +1,4 @@
-package com.example.gps
+package com.example.gps.screens
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -29,7 +29,6 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapView
-import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.ResourceOptions
 import com.mapbox.maps.Style
 import com.mapbox.maps.plugin.annotation.annotations
@@ -40,6 +39,7 @@ import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.maps.plugin.locationcomponent.location
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
+import com.example.gps.R
 
 @SuppressLint("Lifecycle")
 @Composable
@@ -274,6 +274,7 @@ private fun createWaypoint(
 //    ).show()
 }
 
+@SuppressLint("StringFormatInvalid")
 private fun saveWaypoint(
     waypointList: List<Pair<Double, Double>>,
     db: FirebaseFirestore,
