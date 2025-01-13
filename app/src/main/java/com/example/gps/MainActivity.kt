@@ -103,11 +103,12 @@ fun TrailApp() {
 fun NavHostContainer(navController: NavHostController, modifier: Modifier) {
     NavHost(
         navController = navController,
-        startDestination = "map",
+        startDestination = "create",
         modifier = modifier
     ) {
         composable("map") { MapScreen() }
-        composable("create") { TrailCreationScreen() }
+        composable("create") { TrailCreationScreen( navController) }
         composable("browse") { BrowseScreen() }
+        composable("waypointSelection") { WaypointSelectionScreen(navController) }
     }
 }

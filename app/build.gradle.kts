@@ -63,6 +63,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation("org.osmdroid:osmdroid-android:6.1.11")
     implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation ("androidx.navigation:navigation-compose:2.5.3")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
