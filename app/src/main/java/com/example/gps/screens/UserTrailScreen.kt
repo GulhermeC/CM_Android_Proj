@@ -10,6 +10,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,8 +51,13 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
 
     // Waypoints state
     val waypointList = remember { mutableStateListOf<Pair<Double, Double>>() }
+    var clearedWaypoints by remember { mutableStateOf(setOf<Pair<Double, Double>>()) }
+    val userLocation = remember { mutableStateOf<Pair<Double, Double>?>(null) }
+
+
     var pointAnnotationManager by remember { mutableStateOf<PointAnnotationManager?>(null) }
     var hasLocationPermission by remember { mutableStateOf(checkLocationPermission(context)) }
+
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -120,70 +128,96 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
                     val point = Point.fromLngLat(lng, lat)
                     val pointAnnotationOptions = PointAnnotationOptions()
                         .withPoint(point)
-                        .withIconSize(1.5)
+                        .withIconSize(3.5) // 🔹 Increased size
                         .withIconImage("marker-15")
+                        .withTextField("Waypoint")
+                        .withTextColor("#FF5733") // 🔹 Distinct color
+                        .withTextSize(12.0)
                     pointAnnotationManager?.create(pointAnnotationOptions)
                 }
             }
         }
     }
 
+    // 🔹 Improved UI Layout
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.background),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (hasLocationPermission) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                // Map View
-                AndroidView(
-                    factory = { mapView },
-                    modifier = Modifier.fillMaxSize()
-                )
-
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // Timer Display
-                    Text(
-                        text = "Elapsed Time: ${formatTime(elapsedTime)}",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White,
-                        modifier = Modifier
-                            .background(Color.Black.copy(alpha = 0.7f))
-                            .padding(8.dp)
-                    )
-
-                    Button(
-                        onClick = {
-                            if (isRunning) {
-                                isRunning = false
-                            } else {
-                                isRunning = true
-                                startTime = SystemClock.elapsedRealtime()
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(if (isRunning) "Stop Trail" else "Start Trail")
-                    }
-
-                    if (isRunning) {
-                        LaunchedEffect(isRunning) {
-                            while (isRunning) {
-                                elapsedTime = SystemClock.elapsedRealtime() - startTime
-                                delay(1000L) // Update every second
-                            }
-                        }
-                    }
-                }
+        // 🔹 Header Section
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
-        } else {
-            Button(onClick = { requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }) {
-                Text(stringResource(R.string.request_permission))
+            Text(
+                text = "User Trail",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(start = 12.dp)
+            )
+        }
+
+        // 🔹 Map Section
+        Card(
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.cardElevation(6.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(500.dp)
+        ) {
+            AndroidView(
+                factory = { mapView },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 🔹 Timer Display
+        Text(
+            text = "Elapsed Time: ${formatTime(elapsedTime)}",
+            style = MaterialTheme.typography.titleLarge,
+            color = Color.White,
+            modifier = Modifier
+                .background(Color.Black.copy(alpha = 0.7f))
+                .padding(8.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // 🔹 Start Trail Button (Fixing Timer)
+        Button(
+            onClick = {
+                if (isRunning) {
+                    isRunning = false // Stop the timer
+                } else {
+                    isRunning = true
+                    startTime = SystemClock.elapsedRealtime()
+                }
+            },
+            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp)
+                .height(50.dp),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text(if (isRunning) "Stop Trail" else "Start Trail", style = MaterialTheme.typography.bodyLarge)
+        }
+
+        // 🔹 Timer Update (Updates every second when running)
+        if (isRunning) {
+            LaunchedEffect(isRunning) {
+                while (isRunning) {
+                    elapsedTime = SystemClock.elapsedRealtime() - startTime
+                    delay(1000L) // Update every second
+                }
             }
         }
     }
