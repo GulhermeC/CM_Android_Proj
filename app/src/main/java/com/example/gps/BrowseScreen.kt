@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.clickable
 import coil3.compose.rememberAsyncImagePainter
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.gps.data.Trail
 
 @Composable
 fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
@@ -146,11 +147,3 @@ fun TrailItem(location: String, trailName: String, imageUrl: String, onClick: ()
         }
     }
 }
-
-// Data class for Trails
-data class Trail(
-    val name: String,
-    val location: String,
-    val difficulty: String,
-    val imageUrl: String
-)

@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
 
     id("com.google.gms.google-services") version "4.3.15"
+    id("kotlin-android")
+    id("kotlin-parcelize")
 }
 
 android {

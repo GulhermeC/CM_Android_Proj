@@ -30,8 +30,10 @@ fun BottomNavBar(navController: NavHostController) {
                 onClick = {
                     navController.navigate(item.route) {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        popUpTo("browse") { inclusive = true }
                         launchSingleTop = true
                         restoreState = true
+
                     }
                 }
             )
