@@ -62,7 +62,7 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFE6F2EF) //  Soft pastel background
+        color = Color(0xFFE6F2EF) //  Soft pastel backgroundd
     ) {
         Column(
             modifier = Modifier
