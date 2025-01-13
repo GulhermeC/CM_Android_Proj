@@ -166,7 +166,10 @@ fun TrailCreationScreen(navController: NavController) {
 
             //  Image Picker Button
             Button(
-                onClick = { imagePickerLauncher.launch("image/*") },
+                onClick = {
+                    imagePickerLauncher.launch("image/*")
+                    savedStateHandle?.set("selectedImageUri", selectedImageUri)
+                },
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B))
             ) {
