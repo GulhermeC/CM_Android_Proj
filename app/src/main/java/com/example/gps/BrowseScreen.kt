@@ -24,6 +24,8 @@ import coil3.compose.rememberAsyncImagePainter
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.ui.res.stringResource
 import com.example.gps.data.Trail
+import android.content.Context
+import java.util.Locale
 
 @Composable
 fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
@@ -32,6 +34,7 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
     var trailList by remember { mutableStateOf<List<Trail>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var selectedLanguage by remember { mutableStateOf("en") }
 
     // Fetch trails
     LaunchedEffect(Unit) {
@@ -62,12 +65,23 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            DropdownLanguageSelector(selectedLanguage = selectedLanguage) { newLanguage ->
+                selectedLanguage = newLanguage
+                updateLocale(context, newLanguage)
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
         // Search Bar
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search Icon") },
-            placeholder = { Text("Search") },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.search)) },
+            placeholder = { Text(stringResource(R.string.search)) },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -78,7 +92,7 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         } else if (errorMessage != null) {
             Text(
-                text = "Error: ${errorMessage}",
+                text = "${stringResource(R.string.error)} $errorMessage",
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
@@ -104,6 +118,32 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
 }
 
 @Composable
+fun DropdownLanguageSelector(selectedLanguage: String, onLanguageChange: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val languages = mapOf("en" to "English", "pt" to "Português", "es" to "Español")
+
+    Box {
+        Button(onClick = { expanded = true }) {
+            Text(text = languages[selectedLanguage] ?: "Select Language")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            languages.forEach { (code, language) ->
+                DropdownMenuItem(
+                    text = { Text(language) },
+                    onClick = {
+                        onLanguageChange(code)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun TrailItem(location: String, trailName: String, imageUrl: String, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(8.dp),
@@ -123,7 +163,7 @@ fun TrailItem(location: String, trailName: String, imageUrl: String, onClick: ()
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Icon(Icons.Filled.FavoriteBorder, contentDescription = "Favorite")
+                Icon(Icons.Filled.FavoriteBorder, contentDescription = stringResource(R.string.favorite))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -147,6 +187,15 @@ fun TrailItem(location: String, trailName: String, imageUrl: String, onClick: ()
             }
         }
     }
+}
+
+fun updateLocale(context: Context, languageCode: String) {
+    val locale = Locale(languageCode)
+    Locale.setDefault(locale)
+    val config = context.resources.configuration
+    config.setLocale(locale)
+    context.createConfigurationContext(config)
+    context.resources.updateConfiguration(config, context.resources.displayMetrics)
 }
 
 // Data class for Trails
