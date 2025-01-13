@@ -200,6 +200,7 @@ fun updateLocale(context: Context, languageCode: String) {
 
 // Data class for Trails
 data class Trail(
+    val id: String = "",
     val name: String,
     val location: String,
     val difficulty: String,

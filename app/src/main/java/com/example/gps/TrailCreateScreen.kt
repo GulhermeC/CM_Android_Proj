@@ -287,21 +287,43 @@ private fun saveTrailData(
     firestore: FirebaseFirestore,
     onComplete: (Boolean) -> Unit
 ) {
+    // Prepare the trail data
     val trailData = mapOf(
         "name" to trailName,
         "location" to location,
         "difficulty" to difficulty,
-        "waypoints" to selectedWaypoints.map { mapOf("latitude" to it.first, "longitude" to it.second) },
         "imageUrl" to imageUrl
     )
 
+    // Add the trail document to the "trails" collection
     firestore.collection("trails")
         .add(trailData)
-        .addOnSuccessListener {
-            onComplete(true)
+        .addOnSuccessListener { trailDocument ->
+            // Reference to the "waypoints" subcollection
+            val waypointsRef = trailDocument.collection("waypoints")
+
+            // Save each waypoint in the subcollection
+            val batch = firestore.batch()
+            selectedWaypoints.forEachIndexed { index, (latitude, longitude) ->
+                val waypointData = mapOf(
+                    "latitude" to latitude,
+                    "longitude" to longitude,
+                    "label" to (index + 1).toString()
+                )
+                val waypointDoc = waypointsRef.document()
+                batch.set(waypointDoc, waypointData)
+            }
+
+            // Commit the batch operation
+            batch.commit()
+                .addOnSuccessListener {
+                    onComplete(true) // Success
+                }
+                .addOnFailureListener {
+                    onComplete(false) // Failed to save waypoints
+                }
         }
         .addOnFailureListener {
-            onComplete(false)
+            onComplete(false) // Failed to save trail
         }
 }
-
