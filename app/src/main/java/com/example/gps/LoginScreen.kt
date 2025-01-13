@@ -37,7 +37,6 @@ import com.google.firebase.auth.auth
 import androidx.compose.runtime.LaunchedEffect
 import com.example.gps.LoginViewModel
 import kotlinx.coroutines.launch
-import com.example.gps.RegisterActivity
 import androidx.compose.ui.res.stringResource
 import com.example.gps.R
 
@@ -54,7 +53,7 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel) {
     val password = remember { mutableStateOf("") }
     val loading = remember { mutableStateOf(false) }
 
-    // ✅ Load saved email & "Remember Me" state when screen is displayed
+    // Load saved email & "Remember Me" state when screen is displayed
     LaunchedEffect(Unit) {
         viewModel.rememberMeFlow.collect { rememberMe.value = it }
         viewModel.savedEmailFlow.collect { username.value = it }
@@ -116,7 +115,7 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel) {
                             loading.value = false
                             if (task.isSuccessful) {
                                 coroutineScope.launch {
-                                    viewModel.saveUser(usernameInput, rememberMe.value) // ✅ Save user data
+                                    viewModel.saveUser(usernameInput, rememberMe.value) // Save user data
                                 }
                                 navController.navigate("create"){
                                     popUpTo("login") { inclusive = true }

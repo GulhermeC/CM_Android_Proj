@@ -25,8 +25,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
-import com.example.gps.LoginActivity
-import com.example.gps.RegisterActivity
 import androidx.compose.ui.res.stringResource
 import com.example.gps.R
 
