@@ -25,6 +25,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.ui.res.stringResource
 import com.example.gps.data.Trail
 import android.content.Context
+import androidx.navigation.NavController
 import java.util.Locale
 
 @Composable
@@ -198,11 +199,17 @@ fun updateLocale(context: Context, languageCode: String) {
     context.resources.updateConfiguration(config, context.resources.displayMetrics)
 }
 
-// Data class for Trails
-data class Trail(
-    val id: String = "",
-    val name: String,
-    val location: String,
-    val difficulty: String,
-    val imageUrl: String
-)
+
+@Composable
+fun LogoutButton(navController: NavController, viewModel: LoginViewModel) {
+    Button(
+        onClick = {
+            viewModel.logout()
+            navController.navigate("login") {
+                popUpTo("create") { inclusive = true } // 🔹 Remove all previous screens
+            }
+        }
+    ) {
+        Text("Logout")
+    }
+}
