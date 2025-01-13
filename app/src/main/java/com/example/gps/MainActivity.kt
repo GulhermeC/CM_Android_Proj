@@ -114,8 +114,6 @@ fun TrailApp(navController: NavHostController,viewModel: LoginViewModel = viewMo
     val auth = Firebase.auth
     val rememberMe by viewModel.rememberMeFlow.collectAsState(initial = false)
 
-
-
     // 🔹 Compute `startDestination` dynamically
     val startDestination by remember {
         derivedStateOf {
@@ -144,7 +142,7 @@ fun NavHostContainer(navController: NavHostController, modifier: Modifier,startD
         composable("map") { MapScreen() }
         composable("create") { TrailCreationScreen( navController) }
         composable("browse") {
-            BrowseScreen { trail ->
+            BrowseScreen (){ trail ->
                 navController.currentBackStackEntry?.savedStateHandle?.set("selectedTrail", trail)
                 navController.navigate("details")
             }

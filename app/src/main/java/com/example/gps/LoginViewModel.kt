@@ -3,6 +3,7 @@ package com.example.gps
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
@@ -18,9 +19,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun clearUser() {
+    fun logout() {
         viewModelScope.launch {
-            dataStoreManager.clearUser()
+            FirebaseAuth.getInstance().signOut() // 🔹 Sign out from Firebase
+            dataStoreManager.clearUser() // 🔹 Clear "Remember Me" data
         }
     }
 }
