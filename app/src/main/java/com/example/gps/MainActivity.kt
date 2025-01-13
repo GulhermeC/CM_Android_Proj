@@ -56,6 +56,11 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.SideEffect
+import androidx.core.view.WindowCompat
+import android.graphics.Color as AndroidColor
+import androidx.compose.material3.MaterialTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -79,6 +84,9 @@ class MainActivity : ComponentActivity() {
         )
 
         createNotificationChannel(this)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = AndroidColor.parseColor("#19731B")
 
         setContent {
             val navController = rememberNavController()
