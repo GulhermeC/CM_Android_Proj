@@ -28,8 +28,11 @@ import com.example.gps.data.Trail
 import androidx.navigation.NavController
 import java.util.Locale
 import android.app.Activity
+import androidx.compose.foundation.background
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import com.google.firebase.auth.FirebaseAuth
 import com.example.gps.R
 import com.example.gps.viewmodels.LoginViewModel
@@ -62,14 +65,14 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
                     val difficulty = doc.getString("difficulty")
 
                     if (name != null && location != null) {
-                            Trail(
-                                id = doc.id,
-                                name = name,
-                                location = location,
-                                difficulty = difficulty ?: "Unknown",
-                                imageUrl = imageUrl,
-                                isFavorite = false
-                            )
+                        Trail(
+                            id = doc.id,
+                            name = name,
+                            location = location,
+                            difficulty = difficulty ?: "Unknown",
+                            imageUrl = imageUrl,
+                            isFavorite = false
+                        )
                     } else null
                 }
 
@@ -108,7 +111,11 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
             }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)) {
+        // 🔹 Language Selector Aligned to the Right
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
@@ -118,36 +125,57 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
                 updateLocale(context, newLanguage)
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
 
-        // Search Bar
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // 🔹 Search Bar with Rounded Corners
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.search)) },
-            placeholder = { Text(stringResource(R.string.search)) },
-            modifier = Modifier.fillMaxWidth()
+            leadingIcon = {
+                Icon(
+                    Icons.Filled.Search,
+                    contentDescription = stringResource(R.string.search),
+                    tint = Color.Black //  Simple black icon for better contrast
+                )
+            },
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.search),
+                    color = Color.Black // Simple black text for readability
+                )
+            },
+            shape = RoundedCornerShape(12.dp), // Slightly rounded but clean
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp) // Ensures proper height
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Loading or Error State
+        // 🔹 Loading or Error State with Styling
         if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = Color.Gray
+            )
         } else if (errorMessage != null) {
             Text(
                 text = "${stringResource(R.string.error)} $errorMessage",
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                color = Color.Red,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                fontWeight = FontWeight.Bold
             )
         } else {
-            // Filtered List of Trails
+            // 🔹 Styled List of Trails
             val filteredTrails = trailList.filter {
                 it.name.contains(searchQuery.text, ignoreCase = true) ||
                         it.location.contains(searchQuery.text, ignoreCase = true)
             }
 
-            LazyColumn {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp) // More space between cards
+            ) {
                 items(filteredTrails) { trail ->
                     TrailItem(
                         location = trail.location,
@@ -187,8 +215,14 @@ fun DropdownLanguageSelector(
     val languageCodes = listOf("en", "pt", "es")
 
     Box {
-        Button(onClick = { expanded = true }) {
-            Text(stringResource(R.string.select_language))
+        Button(
+            onClick = { expanded = true },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B))
+        ) {
+            Text(
+                stringResource(R.string.select_language),
+                color = Color.White //  Ensure contrast
+            )
         }
 
         DropdownMenu(
@@ -197,7 +231,13 @@ fun DropdownLanguageSelector(
         ) {
             languageCodes.forEach { code ->
                 DropdownMenuItem(
-                    text = { Text(getLanguageLabel(code)) },
+                    text = {
+                        Text(
+                            getLanguageLabel(code),
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF19731B)
+                        )
+                    },
                     onClick = {
                         onLanguageChange(code)
                         expanded = false
@@ -217,62 +257,85 @@ fun TrailItem(
     onClick: () -> Unit,
     onFavoriteClick: () -> Unit
 ) {
-
     Card(
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(16.dp), //  More rounded edges
+        colors = CardDefaults.cardColors(containerColor = Color.White), //  White background
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
-            .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .padding(horizontal = 8.dp)
+            .clickable { onClick() }
+            .shadow(4.dp, RoundedCornerShape(16.dp)), //  Light shadow
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = location,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Icon(
-                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                    contentDescription = stringResource(R.string.favorite),
-                    modifier = Modifier.clickable { onFavoriteClick() }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (imageUrl.isBlank()) {
+                //  Placeholder Image with Soft Rounded Corners
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(Color.LightGray, shape = RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = "Default Trail Icon",
+                        tint = Color(0xFF19731B),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            } else {
+                Image(
+                    painter = rememberAsyncImagePainter(model = imageUrl),
+                    contentDescription = "Trail Image",
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-            println("Image URL in BrowseScreen: $imageUrl")
+            Spacer(modifier = Modifier.width(12.dp))
 
-            Row {
-                if (imageUrl.isBlank()) {
-                    // Show an icon instead of an image when no image is available
+            Column(modifier = Modifier.weight(1f)) {
+                //  Location with Map Pin Icon
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Default.Place, // Replace with an appropriate Material icon
-                        contentDescription = "Default Trail Icon",
-                        modifier = Modifier
-                            .size(64.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                        imageVector = Icons.Default.Place,
+                        contentDescription = "Location Icon",
+                        tint = Color(0xFF19731B),
+                        modifier = Modifier.size(16.dp)
                     )
-                } else {
-                    Image(
-                        painter = rememberAsyncImagePainter(model = imageUrl),
-                        contentDescription = "Trail Image",
-                        modifier = Modifier
-                            .size(64.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = location,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF19731B)
                     )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
 
+                //  Trail Name with Bold Font
                 Text(
                     text = trailName,
                     fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
             }
+
+            //  Favorite Icon Styled Like the Reference Image
+            Icon(
+                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                contentDescription = stringResource(R.string.favorite),
+                tint = if (isFavorite) Color(0xFFFF0000) else Color.Gray, //  Red when favorited
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { onFavoriteClick() }
+            )
         }
     }
 }

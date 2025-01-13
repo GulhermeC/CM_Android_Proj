@@ -61,6 +61,8 @@ import androidx.compose.runtime.SideEffect
 import androidx.core.view.WindowCompat
 import android.graphics.Color as AndroidColor
 import androidx.compose.material3.MaterialTheme
+import com.example.gps.screens.FavoritesScreen
+import com.example.gps.ui.theme.GpsTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -92,7 +94,9 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val viewModel: LoginViewModel = viewModel()
 
-            TrailApp(navController,viewModel)
+            GpsTheme {
+                TrailApp(navController, viewModel)
+            }
         }
 
     }
@@ -151,7 +155,7 @@ fun TrailApp(navController: NavHostController,viewModel: LoginViewModel = viewMo
     val auth = Firebase.auth
     val rememberMe by viewModel.rememberMeFlow.collectAsState(initial = false)
 
-    // 🔹 Compute `startDestination` dynamically
+    //  Compute `startDestination` dynamically
     val startDestination by remember {
         derivedStateOf {
             if (rememberMe && auth.currentUser != null) "create" else "login"
@@ -225,7 +229,7 @@ fun LoadingScreen() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CircularProgressIndicator() // 🔹 Show a loading spinner
+            CircularProgressIndicator() // Show a loading spinner
             Spacer(modifier = Modifier.height(16.dp))
             Text("Loading...")
         }
