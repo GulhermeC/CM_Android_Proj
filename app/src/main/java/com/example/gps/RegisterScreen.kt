@@ -25,6 +25,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.example.gps.LoginActivity
+import com.example.gps.RegisterActivity
+import androidx.compose.ui.res.stringResource
+import com.example.gps.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,14 +52,14 @@ fun RegisterScreen(navController: NavController) {
             OutlinedTextField(
                 value = username.value,
                 onValueChange = { username.value = it },
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email)) },
                 singleLine = true
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = password.value,
                 onValueChange = { password.value = it },
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.password)) },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
@@ -64,7 +68,7 @@ fun RegisterScreen(navController: NavController) {
             OutlinedTextField(
                 value = confirmPassword.value,
                 onValueChange = { confirmPassword.value = it },
-                label = { Text("Confirm Password") },
+                label = { Text(stringResource(R.string.confirm_password)) },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
@@ -79,7 +83,7 @@ fun RegisterScreen(navController: NavController) {
                     return@Button
                 }
                 if (passwordInput != confirmPasswordInput) {
-                    Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.passwords_do_not_match), Toast.LENGTH_SHORT).show()
                     return@Button
                 }
 
@@ -92,14 +96,14 @@ fun RegisterScreen(navController: NavController) {
                                 popUpTo("register") { inclusive = true }
                             }
                         } else {
-                            Toast.makeText(context, "Registration failed", Toast.LENGTH_SHORT)
+                            Toast.makeText(context, context.getString(R.string.fill_all_fields), Toast.LENGTH_SHORT)
                                 .show()
                         }
                     }
             },
             enabled = !loading.value
             ) {
-                Text("Register")
+                Text(stringResource(R.string.register))
             }
             // Spacer to separate buttons
             Spacer(modifier = Modifier.height(8.dp))
@@ -108,7 +112,7 @@ fun RegisterScreen(navController: NavController) {
                 onClick = { navController.navigate("login") },
                 enabled = !loading.value
             ) {
-                Text("Back to Login")
+                Text(stringResource(R.string.login))
             }
         }
     }

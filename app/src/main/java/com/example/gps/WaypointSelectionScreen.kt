@@ -39,6 +39,7 @@ import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.maps.plugin.locationcomponent.location
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
 
 @SuppressLint("Lifecycle")
 @Composable
@@ -85,7 +86,7 @@ fun WaypointSelectionScreen(navController: NavHostController) {
         onResult = { isGranted ->
             hasLocationPermission = isGranted
             if (!isGranted) {
-                Toast.makeText(context, "Permission Denied. App cannot function properly.", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.permission_denied), Toast.LENGTH_LONG).show()
             }
         }
     )
@@ -174,7 +175,7 @@ fun WaypointSelectionScreen(navController: NavHostController) {
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Done (Save Waypoints)")
+                        Text(stringResource(R.string.done_save_waypoints))
                     }
 
                     OutlinedButton(
@@ -182,14 +183,14 @@ fun WaypointSelectionScreen(navController: NavHostController) {
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Clear Waypoints")
+                        Text(stringResource(R.string.clear_waypoints))
                     }
 
                     if(showDialog){
                         AlertDialog(
                             onDismissRequest = { showDialog = false },
-                            title = { Text("Confirm Deletion") },
-                            text = { Text("Are you sure you want to delete all waypoints? This action cannot be undone.") },
+                            title = { Text(stringResource(R.string.confirm_deletion)) },
+                            text = { Text(stringResource(R.string.delete_all_waypoints_message)) },
                             confirmButton = {
                                 Button(onClick = {
                                     deleteAllWaypointsFromFirebase(db, context)
@@ -198,12 +199,12 @@ fun WaypointSelectionScreen(navController: NavHostController) {
                                     waypointCounter.intValue = 1
                                     showDialog = false
                                 }) {
-                                    Text("Yes, Delete")
+                                    Text(stringResource(R.string.yes_delete))
                                 }
                             },
                             dismissButton = {
                                 Button(onClick = { showDialog = false }) {
-                                    Text("Cancel")
+                                    Text(stringResource(R.string.cancel))
                                 }
                             }
                         )
@@ -226,7 +227,7 @@ fun WaypointSelectionScreen(navController: NavHostController) {
                                 .padding(8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = "Lat: ${waypoint.first}, Lng: ${waypoint.second}")
+                            Text(text = stringResource(R.string.waypoint_added_2, waypoint.first, waypoint.second))
 
                             IconButton(
                                 onClick = { removeWaypoint(waypoint, waypointList, pointAnnotationManager) }
@@ -239,7 +240,7 @@ fun WaypointSelectionScreen(navController: NavHostController) {
             }
         } else {
             Button(onClick = { requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }) {
-                Text("Request Location Permission")
+                Text(stringResource(R.string.request_permission))
             }
         }
     }
@@ -279,7 +280,7 @@ private fun saveWaypoint(
     context: Context
 ) {
     if (waypointList.isEmpty()) {
-        Toast.makeText(context, "No waypoints to save", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.no_waypoints_to_save), Toast.LENGTH_SHORT).show()
         println("No waypoints to save")
         return
     }
@@ -313,14 +314,17 @@ private fun saveWaypoint(
             // Commit the batch
             newBatch.commit()
                 .addOnSuccessListener {
-                    Toast.makeText(context, "All waypoints saved successfully!", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.waypoints_saved_success, waypointList.size),
+                        Toast.LENGTH_SHORT
+                    ).show()
                     println("Successfully saved ${waypointList.size} waypoints")
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(
                         context,
-                        "Failed to save waypoints: ${e.message}",
+                        context.getString(R.string.failed_to_save_waypoints, e.message),
                         Toast.LENGTH_SHORT
                     ).show()
                     println("Error saving waypoints: ${e.message}")
@@ -373,7 +377,7 @@ private fun loadWaypoints(
             println("Firestore query completed. Document count: ${result.size()}")
 
             if (result.isEmpty) {
-                Toast.makeText(context, "No waypoints found!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.no_waypoints_found), Toast.LENGTH_SHORT).show()
                 println("No waypoints found in Firestore")
                 return@addOnSuccessListener
             }
@@ -410,13 +414,17 @@ private fun loadWaypoints(
 
             Toast.makeText(
                 context,
-                "Loaded ${waypointList.size} waypoints",
+                context.getString(R.string.loaded_waypoints_count, waypointList.size),
                 Toast.LENGTH_SHORT
             ).show()
             println("Finished loading ${waypointList.size} waypoints")
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Failed to load: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                context.getString(R.string.failed_to_load_waypoints, e.message ?: "Unknown error"),
+                Toast.LENGTH_SHORT
+            ).show()
             println("Error loading waypoints: ${e.message}")
             e.printStackTrace()
         }
@@ -428,7 +436,7 @@ private fun deleteAllWaypointsFromFirebase(db: FirebaseFirestore, context: Conte
 
     waypointsRef.get().addOnSuccessListener { result ->
         if (result.isEmpty) {
-            Toast.makeText(context, "No waypoints to delete.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.no_waypoints_to_delete), Toast.LENGTH_SHORT).show()
             return@addOnSuccessListener
         }
 
@@ -439,13 +447,21 @@ private fun deleteAllWaypointsFromFirebase(db: FirebaseFirestore, context: Conte
 
         batch.commit()
             .addOnSuccessListener {
-                Toast.makeText(context, "All waypoints deleted!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.all_waypoints_deleted), Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
-                Toast.makeText(context, "Failed to delete waypoints: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.failed_to_delete_waypoints, e.message),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }.addOnFailureListener { e ->
-        Toast.makeText(context, "Error fetching waypoints: ${e.message}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            context,
+            context.getString(R.string.error_fetching_waypoints, e.message),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 }
 

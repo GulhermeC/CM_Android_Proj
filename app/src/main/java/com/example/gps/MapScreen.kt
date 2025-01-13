@@ -67,6 +67,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.ktx.auth
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
 
 //@SuppressLint("Lifecycle")
 //@Composable
@@ -119,7 +120,12 @@ fun MapScreen() {
         onResult = { isGranted ->
             hasLocationPermission = isGranted
             if (!isGranted) {
-                Toast.makeText(context, "Permission Denied. App cannot function properly.", Toast.LENGTH_LONG).show()
+                val permissionDenied = context.getString(R.string.permission_denied)
+                Toast.makeText(
+                    context,
+                    permissionDenied,
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     )
@@ -207,7 +213,7 @@ fun MapScreen() {
                                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         ) {
-                            Text("Load Waypoints")
+                            Text(stringResource(R.string.load_waypoints))
                         }
 
                         FilledTonalButton(
@@ -215,7 +221,7 @@ fun MapScreen() {
                                 saveWaypoint(waypointList, db, context)
                             }
                         ) {
-                            Text("Save Waypoint")
+                            Text(stringResource(R.string.save_waypoint))
                         }
 
                         OutlinedButton(
@@ -230,7 +236,7 @@ fun MapScreen() {
                                 }
                             }
                         ) {
-                            Text("Clear Waypoints")
+                            Text(stringResource(R.string.clear_waypoints))
                         }
                     }
                 }
@@ -238,7 +244,7 @@ fun MapScreen() {
         }
         else{
             Button(onClick = { requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }) {
-                Text("Request Location Permission")
+                Text(stringResource(R.string.request_location_permission))
             }
         }
     }
@@ -276,7 +282,7 @@ private fun saveWaypoint(
     context: Context
 ) {
     if (waypointList.isEmpty()) {
-        Toast.makeText(context, "No waypoints to save", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.no_waypoints_to_save), Toast.LENGTH_SHORT).show()
         println("No waypoints to save")
         return
     }
@@ -302,11 +308,11 @@ private fun saveWaypoint(
     // Commit the batch
     batch.commit()
         .addOnSuccessListener {
-            Toast.makeText(context, "All waypoints saved successfully!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.waypoints_saved_success), Toast.LENGTH_SHORT).show()
             println("Successfully saved ${waypointList.size} waypoints")
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Failed to save waypoints: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.waypoints_saved_failed, e.message), Toast.LENGTH_SHORT).show()
             println("Error saving waypoints: ${e.message}")
             e.printStackTrace()
         }
@@ -319,7 +325,7 @@ private fun loadWaypoints(
     context: Context,
     waypointCounter: MutableState<Int>,
 ) {
-    println("Starting to load waypoints...")
+    println(context.getString(R.string.starting_load))
 
     // Clear existing waypoints
     waypointList.clear()
@@ -332,7 +338,7 @@ private fun loadWaypoints(
             println("Firestore query completed. Document count: ${result.size()}")
 
             if (result.isEmpty) {
-                Toast.makeText(context, "No waypoints found!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.no_waypoints_found), Toast.LENGTH_SHORT).show()
                 println("No waypoints found in Firestore")
                 return@addOnSuccessListener
             }
@@ -367,15 +373,11 @@ private fun loadWaypoints(
             // ✅ Update waypointCounter to be the next available number
             waypointCounter.value = waypointList.size + 1
 
-            Toast.makeText(
-                context,
-                "Loaded ${waypointList.size} waypoints",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(context, context.getString(R.string.loaded_waypoints, waypointList.size), Toast.LENGTH_SHORT).show()
             println("Finished loading ${waypointList.size} waypoints")
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Failed to load: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.failed_to_load, e.message), Toast.LENGTH_SHORT).show()
             println("Error loading waypoints: ${e.message}")
             e.printStackTrace()
         }
@@ -397,7 +399,7 @@ private fun clearWaypoints(
     waypointCounter.value = 1
 
     // Inform the user that only the map was cleared
-    Toast.makeText(context, "Waypoints cleared from map, but still saved in Firestore!", Toast.LENGTH_SHORT).show()
+    Toast.makeText(context, context.getString(R.string.waypoints_cleared), Toast.LENGTH_SHORT).show()
 }
 
 // Function to check if location permission is granted

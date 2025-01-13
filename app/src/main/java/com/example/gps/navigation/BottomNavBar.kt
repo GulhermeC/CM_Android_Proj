@@ -11,13 +11,15 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.ui.res.stringResource
+import com.example.gps.R
 
 @Composable
 fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
-        BottomNavItem("Map", "map", Icons.Filled.Place),
-        BottomNavItem("Create", "create", Icons.Filled.Add),
-        BottomNavItem("Browse", "browse", Icons.Filled.Search)
+        BottomNavItem(stringResource(R.string.map), "map", Icons.Filled.Place),
+        BottomNavItem(stringResource(R.string.create), "create", Icons.Filled.Add),
+        BottomNavItem(stringResource(R.string.browse), "browse", Icons.Filled.Search)
     )
 
     NavigationBar {
