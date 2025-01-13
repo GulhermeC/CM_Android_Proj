@@ -38,12 +38,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.example.gps.data.Trail
 import com.example.gps.screens.BrowseScreen
 import com.example.gps.screens.TrailCreationScreen
 import com.example.gps.screens.TrailDetailsScreen
+import com.example.gps.screens.UserTrailScreen
 import com.example.gps.screens.WaypointSelectionScreen
 import com.example.gps.viewmodels.LoginViewModel
 
@@ -156,6 +159,16 @@ fun NavHostContainer(navController: NavHostController, modifier: Modifier,startD
             trail?.let { TrailDetailsScreen(it, navController) }
         }
         composable("waypointSelection") { WaypointSelectionScreen(navController) }
+        composable("userTrail/{trailId}?waypoints={waypoints}",
+            arguments = listOf(
+                navArgument("trailId") { type = NavType.StringType },
+                navArgument("waypoints") { type = NavType.StringType; nullable = true }
+            )
+        ) { backStackEntry ->
+            val trailId = backStackEntry.arguments?.getString("trailId") ?: ""
+            val waypointsArg = backStackEntry.arguments?.getString("waypoints")
+            UserTrailScreen(navController, trailId, waypointsArg)
+        }
     }
 }
 
