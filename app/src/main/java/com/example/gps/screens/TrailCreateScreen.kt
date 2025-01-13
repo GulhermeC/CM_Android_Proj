@@ -31,7 +31,10 @@ import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import com.example.gps.R
 import com.example.gps.showNotification
 
@@ -73,159 +76,187 @@ fun TrailCreationScreen(navController: NavController) {
 
     val scrollState = rememberScrollState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFE6F2EF) // ✅ Soft pastel background
     ) {
-        Text(
-            text = stringResource(R.string.create_trail),
-            style = MaterialTheme.typography.titleLarge
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Trail Name Input
-        OutlinedTextField(
-            value = trailName,
-            onValueChange = {
-                trailName = it
-                savedStateHandle?.set("trailName", it)
-            },
-            label = { Text(stringResource(R.string.name_of_trail)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Location Input with Icon
-        OutlinedTextField(
-            value = location,
-            onValueChange = {
-                location = it
-                savedStateHandle?.set("location", it)
-            },
-            label = { Text(stringResource(R.string.location)) },
-            singleLine = true,
-            trailingIcon = {
-                Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Location Icon")
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Difficulty Selection
-        Text(
-            text = stringResource(R.string.difficulty),
-            fontSize = 18.sp,
-            color = Color.Black
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp)
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            DifficultyRadioButton(label = stringResource(R.string.easy), selectedDifficulty = difficulty) {
-                difficulty = it
-                savedStateHandle?.set("difficulty", it)
-            }
-            DifficultyRadioButton(label = stringResource(R.string.medium), selectedDifficulty = difficulty) {
-                difficulty = it
-                savedStateHandle?.set("difficulty", it)
-            }
-            DifficultyRadioButton(label = stringResource(R.string.hard), selectedDifficulty = difficulty) {
-                difficulty = it
-                savedStateHandle?.set("difficulty", it)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Image Picker
-        Button(onClick = { imagePickerLauncher.launch("image/*") }) {
-            Text(stringResource(R.string.select_image))
-        }
-
-        // Display Selected Image
-        selectedImageUri?.let { uri ->
-            Spacer(modifier = Modifier.height(12.dp))
-            Image(
-                painter = rememberAsyncImagePainter(model = uri),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(200.dp)
-                    .padding(8.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Button to open Waypoint Selection Screen
-        Button(onClick = {
-            navController.currentBackStackEntry?.savedStateHandle?.set("trailName", trailName)
-            navController.currentBackStackEntry?.savedStateHandle?.set("location", location)
-            navController.currentBackStackEntry?.savedStateHandle?.set("difficulty", difficulty)
-            navController.currentBackStackEntry?.savedStateHandle?.set("selectedImageUri", selectedImageUri)
-            navController.navigate("waypointSelection")
-        }) {
-            Text(stringResource(R.string.select_waypoints))
-        }
-
-
-        // **Mini Map to Show Selected Waypoints**
-        if (selectedWaypoints.isNotEmpty()) {
+            // 🔹 Title
             Text(
-                text = stringResource(R.string.waypoint_preview),
-                fontSize = 16.sp,
+                text = stringResource(R.string.create_trail),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xFF19731B) // ✅ Dark green title
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 🔹 Trail Name Input
+            OutlinedTextField(
+                value = trailName,
+                onValueChange = { trailName = it },
+                label = { Text(stringResource(R.string.name_of_trail)) },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 🔹 Location Input with Icon
+            OutlinedTextField(
+                value = location,
+                onValueChange = { location = it },
+                label = { Text(stringResource(R.string.location)) },
+                singleLine = true,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Location Icon",
+                        tint = Color(0xFF19731B) // ✅ Dark Green icon
+                    )
+                },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 🔹 Difficulty Selection
+            Text(
+                text = stringResource(R.string.difficulty),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
-            MiniMap(selectedWaypoints)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                DifficultyRadioButton(
+                    label = stringResource(R.string.easy),
+                    selectedDifficulty = difficulty
+                ) { difficulty = it }
+                DifficultyRadioButton(
+                    label = stringResource(R.string.medium),
+                    selectedDifficulty = difficulty
+                ) { difficulty = it }
+                DifficultyRadioButton(
+                    label = stringResource(R.string.hard),
+                    selectedDifficulty = difficulty
+                ) { difficulty = it }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 🔹 Image Picker Button
+            Button(
+                onClick = { imagePickerLauncher.launch("image/*") },
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B))
+            ) {
+                Text(
+                    stringResource(R.string.select_image),
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            // 🔹 Display Selected Image
+            selectedImageUri?.let { uri ->
+                Spacer(modifier = Modifier.height(12.dp))
+                Image(
+                    painter = rememberAsyncImagePainter(model = uri),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(200.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .padding(8.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
-        }
 
+            // 🔹 Button to Open Waypoint Selection Screen
+            Button(
+                onClick = { navController.navigate("waypointSelection") },
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp)
+            ) {
+                Text(
+                    stringResource(R.string.select_waypoints),
+                    color = Color(0xFF19731B),
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Save Button
-        Button(
-            onClick = {
-                if (trailName.isNotBlank() && location.isNotBlank()) {
-                    isSaving = true
-                    saveTrail(
-                        trailName,
-                        location,
-                        difficulty,
-                        selectedWaypoints,
-                        selectedImageUri,
-                        firestore,
-                        storage,
-                        context
-                    ) { success ->
-                        isSaving = false
-                        val message = if (success) {
-                            context.getString(R.string.trail_saved_success)
-                        } else {
-                            context.getString(R.string.trail_saved_failed)
+            // 🔹 Mini Map to Show Selected Waypoints
+            if (selectedWaypoints.isNotEmpty()) {
+                Text(
+                    text = stringResource(R.string.waypoint_preview),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                MiniMap(selectedWaypoints)
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 🔹 Save Button
+            Button(
+                onClick = {
+                    if (trailName.isNotBlank() && location.isNotBlank()) {
+                        isSaving = true
+                        saveTrail(
+                            trailName,
+                            location,
+                            difficulty,
+                            selectedWaypoints,
+                            selectedImageUri,
+                            firestore,
+                            storage,
+                            context
+                        ) { success ->
+                            isSaving = false
+                            val message = if (success) {
+                                context.getString(R.string.trail_saved_success)
+                            } else {
+                                context.getString(R.string.trail_saved_failed)
+                            }
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                         }
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    } else {
+                        val fillAllFieldsMessage = context.getString(R.string.fill_all_fields)
+                        Toast.makeText(context, fillAllFieldsMessage, Toast.LENGTH_SHORT).show()
                     }
-                } else {
-                    val fillAllFieldsMessage = context.getString(R.string.fill_all_fields)
-                    Toast.makeText(context, fillAllFieldsMessage, Toast.LENGTH_SHORT).show()
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !isSaving
-        ) {
-            Text(if (isSaving) stringResource(R.string.saving) else stringResource(R.string.save_trail))
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isSaving,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B))
+            ) {
+                Text(
+                    if (isSaving) stringResource(R.string.saving) else stringResource(R.string.save_trail),
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
 
+// 🔹 Styled Difficulty Radio Buttons
 @Composable
 fun DifficultyRadioButton(label: String, selectedDifficulty: String, onSelection: (String) -> Unit) {
     Row(
@@ -233,9 +264,10 @@ fun DifficultyRadioButton(label: String, selectedDifficulty: String, onSelection
     ) {
         RadioButton(
             selected = selectedDifficulty == label,
-            onClick = { onSelection(label) }
+            onClick = { onSelection(label) },
+            colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF19731B)) // ✅ Dark Green selection
         )
-        Text(text = label, modifier = Modifier.padding(start = 4.dp))
+        Text(text = label, modifier = Modifier.padding(start = 4.dp), fontWeight = FontWeight.Medium)
     }
 }
 

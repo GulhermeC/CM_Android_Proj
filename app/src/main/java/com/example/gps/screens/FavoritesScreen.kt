@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -110,7 +111,6 @@ fun FavoritesScreen(navController: androidx.navigation.NavController, viewModel:
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.favorites_title), color = Color.White) },
-                colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color(0xFF19731B)) // ✅ Dark Green Top Bar
                 actions = {
                     LogoutButton(navController = navController, viewModel = viewModel)
                 }
