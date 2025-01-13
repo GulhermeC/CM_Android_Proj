@@ -33,6 +33,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import com.example.gps.R
+import com.example.gps.showNotification
+
 
 @Composable
 fun TrailCreationScreen(navController: NavController) {
@@ -270,6 +272,8 @@ private fun saveTrail(
             .addOnSuccessListener {
                 imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
                     saveTrailData(trailName, location, difficulty, selectedWaypoints, downloadUrl.toString(), firestore, onComplete)
+                    onComplete(true)
+                    showNotification(context, trailName)
                 }.addOnFailureListener {
                     onComplete(false)
                 }

@@ -49,6 +49,12 @@ import com.example.gps.screens.TrailDetailsScreen
 import com.example.gps.screens.UserTrailScreen
 import com.example.gps.screens.WaypointSelectionScreen
 import com.example.gps.viewmodels.LoginViewModel
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 
 class MainActivity : ComponentActivity() {
 
@@ -71,6 +77,8 @@ class MainActivity : ComponentActivity() {
             PlayIntegrityAppCheckProviderFactory.getInstance()
         )
 
+        createNotificationChannel(this)
+
         setContent {
             val navController = rememberNavController()
             val viewModel: LoginViewModel = viewModel()
@@ -82,9 +90,20 @@ class MainActivity : ComponentActivity() {
 
     // Check for location permission and proceed accordingly
     private fun checkPermissionsAndProceed() {
-        if (hasLocationPermission()) {
-        } else {
-            requestLocationPermission()
+        val requiredPermissions = mutableListOf<String>()
+
+        if (!hasLocationPermission()) {
+            requiredPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requiredPermissions.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (requiredPermissions.isNotEmpty()) {
+            requestPermissionLauncher.launch(requiredPermissions.toTypedArray())
         }
     }
 
@@ -98,15 +117,21 @@ class MainActivity : ComponentActivity() {
 
     // Request Location Permission
     private fun requestLocationPermission() {
-        requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        requestPermissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
     }
 
     // Handle permission result
     private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-            } else {
-                Toast.makeText(this, "Permission Denied. App cannot function properly.", Toast.LENGTH_LONG).show()
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val locationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+            val notificationsGranted = permissions[Manifest.permission.POST_NOTIFICATIONS] ?: false
+
+            if (!locationGranted) {
+                Toast.makeText(this, "Location permission is required for the app to function.", Toast.LENGTH_LONG).show()
+            }
+
+            if (!notificationsGranted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Toast.makeText(this, "Notification permission is required for notifications.", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -189,3 +214,39 @@ fun LoadingScreen() {
         }
     }
 }
+
+// Notification Channel Setup
+fun createNotificationChannel(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channel = NotificationChannel(
+            "trail_creation_channel",
+            "Trail Creation Notifications",
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = "Notifies when a new trail is created"
+        }
+        val notificationManager: NotificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+}
+
+// Show Notification
+fun showNotification(context: Context, trailName: String) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+    ) {
+        Toast.makeText(context, "Notification permission is required to show notifications.", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    val notification = NotificationCompat.Builder(context, "trail_creation_channel")
+        .setSmallIcon(R.drawable.ic_notification)
+        .setContentTitle("Trail Created")
+        .setContentText("A new Trail has been created!")
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .build()
+
+    NotificationManagerCompat.from(context).notify(1, notification)
+}
+
