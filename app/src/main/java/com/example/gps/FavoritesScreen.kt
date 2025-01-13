@@ -33,7 +33,6 @@ fun FavoritesScreen(navController: androidx.navigation.NavController) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        // Make sure user is logged in
         if (user == null) {
             errorMessage = "User not logged in"
             isLoading = false
@@ -100,7 +99,6 @@ fun FavoritesScreen(navController: androidx.navigation.NavController) {
         }
     }
 
-    // UI
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(stringResource(R.string.favorites_title)) })
@@ -123,7 +121,10 @@ fun FavoritesScreen(navController: androidx.navigation.NavController) {
             } else {
                 LazyColumn {
                     items(favTrails) { trail ->
-                        FavoriteTrailItem(trail)
+                        FavoriteTrailItem(trail = trail) {
+                            navController.currentBackStackEntry?.savedStateHandle?.set("selectedTrail", trail)
+                            navController.navigate("details")
+                        }
                     }
                 }
             }
@@ -132,12 +133,13 @@ fun FavoritesScreen(navController: androidx.navigation.NavController) {
 }
 
 @Composable
-fun FavoriteTrailItem(trail: Trail) {
+fun FavoriteTrailItem(trail: Trail, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable { onClick() }, // Handle click
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -181,3 +183,4 @@ fun FavoriteTrailItem(trail: Trail) {
         }
     }
 }
+

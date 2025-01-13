@@ -45,8 +45,6 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedLanguage by remember { mutableStateOf("en") }
 
-    var showOnlyFavorites by remember { mutableStateOf(false) }
-
     // Fetch trails
     LaunchedEffect(Unit) {
         isLoading = true
@@ -96,7 +94,6 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
                             isLoading = false
                         }
                 } else {
-                    // Not logged in => no personal favorites
                     trailList = allTrails
                     isLoading = false
                 }
@@ -130,18 +127,6 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(vertical = 8.dp)
-        ) {
-            Text(text = stringResource(R.string.show_only_favorites))
-            Spacer(modifier = Modifier.width(8.dp))
-            Switch(
-                checked = showOnlyFavorites,
-                onCheckedChange = { showOnlyFavorites = it }
-            )
-        }
-
         // Loading or Error State
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
@@ -158,14 +143,8 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
                         it.location.contains(searchQuery.text, ignoreCase = true)
             }
 
-            val displayedTrails = if (showOnlyFavorites) {
-                filteredTrails.filter { it.isFavorite }
-            } else {
-                filteredTrails
-            }
-
             LazyColumn {
-                items(displayedTrails) { trail ->
+                items(filteredTrails) { trail ->
                     TrailItem(
                         location = trail.location,
                         trailName = trail.name,
