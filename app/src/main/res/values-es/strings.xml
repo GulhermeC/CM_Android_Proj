@@ -66,4 +66,12 @@
     <string name="finished_loading_waypoints">Finalizada la carga de %1$d punto(s)</string>
     <string name="failed_to_load_waypoints">Error al cargar: %1$s</string>
     <string name="error_loading_waypoints">Error al cargar los puntos: %1$s</string>
+    <string name="back">Volver</string>
+    <string name="choose_trail">Elegir ruta</string>
+    <string name="waypoints_label">Puntos de paso:</string>
+    <string name="show_only_favorites">Mostrar solo favoritos</string>
+    <string name="lang_en">Inglés</string>
+    <string name="lang_pt">Portugués</string>
+    <string name="lang_es">Español</string>
+    <string name="select_language">Seleccionar idioma</string>
 </resources>

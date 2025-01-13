@@ -66,4 +66,13 @@
     <string name="finished_loading_waypoints">Finished loading %1$d waypoints</string>
     <string name="failed_to_load_waypoints">Failed to load: %1$s</string>
     <string name="error_loading_waypoints">Error loading waypoints: %1$s</string>
+    <string name="back">Back</string>
+    <string name="choose_trail">Choose Trail</string>
+    <string name="waypoints_label">Waypoints:</string>
+    <string name="show_only_favorites">Show only favorites</string>
+    <string name="lang_en">English</string>
+    <string name="lang_pt">Português</string>
+    <string name="lang_es">Español</string>
+    <string name="select_language">Select Language</string>
+
 </resources>

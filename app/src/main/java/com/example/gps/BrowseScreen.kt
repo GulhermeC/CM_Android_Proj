@@ -1,11 +1,15 @@
 package com.example.gps
 
+import android.content.Context
+import android.os.Parcelable
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -14,19 +18,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.clickable
 import coil3.compose.rememberAsyncImagePainter
 import com.google.firebase.firestore.FirebaseFirestore
-import androidx.compose.ui.res.stringResource
+import com.example.gps.R
 import com.example.gps.data.Trail
 import android.content.Context
 import androidx.navigation.NavController
 import java.util.Locale
+import kotlinx.parcelize.Parcelize
+import android.app.Activity
 
 @Composable
 fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
@@ -36,6 +41,8 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedLanguage by remember { mutableStateOf("en") }
+
+    var showOnlyFavorites by remember { mutableStateOf(false) }
 
     // Fetch trails
     LaunchedEffect(Unit) {
@@ -51,7 +58,14 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
                     val imageUrl = document.getString("imageUrl")
                     val difficulty = document.getString("difficulty")
                     if (name != null && location != null && imageUrl != null) {
-                        Trail(name, location, difficulty ?: "Unknown", imageUrl)
+                        Trail(
+                            id = document.id,
+                            name = name,
+                            location = location,
+                            difficulty = difficulty ?: "Unknown",
+                            imageUrl = imageUrl,
+                            isFavorite = false
+                        )
                     } else {
                         null
                     }
@@ -88,6 +102,18 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(vertical = 8.dp)
+        ) {
+            Text(text = stringResource(R.string.show_only_favorites))
+            Spacer(modifier = Modifier.width(8.dp))
+            Switch(
+                checked = showOnlyFavorites,
+                onCheckedChange = { showOnlyFavorites = it }
+            )
+        }
+
         // Loading or Error State
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
@@ -104,13 +130,29 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
                         it.location.contains(searchQuery.text, ignoreCase = true)
             }
 
+            val displayedTrails = if (showOnlyFavorites) {
+                filteredTrails.filter { it.isFavorite }
+            } else {
+                filteredTrails
+            }
+
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(filteredTrails) { trail ->
+                items(displayedTrails) { trail ->
                     TrailItem(
                         location = trail.location,
                         trailName = trail.name,
                         imageUrl = trail.imageUrl,
-                        onClick = { onTrailClick(trail) }
+                        isFavorite = trail.isFavorite,
+                        onClick = { onTrailClick(trail) },
+                        // Toggling favorite in memory
+                        onFavoriteClick = {
+                            // Update this trail’s isFavorite in the list
+                            trailList = trailList.map {
+                                if (it.name == trail.name && it.location == trail.location) {
+                                    it.copy(isFavorite = !it.isFavorite)
+                                } else it
+                            }
+                        }
                     )
                 }
             }
@@ -119,21 +161,25 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
 }
 
 @Composable
-fun DropdownLanguageSelector(selectedLanguage: String, onLanguageChange: (String) -> Unit) {
+fun DropdownLanguageSelector(
+    selectedLanguage: String,
+    onLanguageChange: (String) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
-    val languages = mapOf("en" to "English", "pt" to "Português", "es" to "Español")
+    val languageCodes = listOf("en", "pt", "es")
 
     Box {
         Button(onClick = { expanded = true }) {
-            Text(text = languages[selectedLanguage] ?: "Select Language")
+            Text(stringResource(R.string.select_language))
         }
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            languages.forEach { (code, language) ->
+            languageCodes.forEach { code ->
                 DropdownMenuItem(
-                    text = { Text(language) },
+                    text = { Text(getLanguageLabel(code)) },
                     onClick = {
                         onLanguageChange(code)
                         expanded = false
@@ -145,7 +191,14 @@ fun DropdownLanguageSelector(selectedLanguage: String, onLanguageChange: (String
 }
 
 @Composable
-fun TrailItem(location: String, trailName: String, imageUrl: String, onClick: () -> Unit) {
+fun TrailItem(
+    location: String,
+    trailName: String,
+    imageUrl: String,
+    isFavorite: Boolean,
+    onClick: () -> Unit,
+    onFavoriteClick: () -> Unit
+) {
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
@@ -164,11 +217,16 @@ fun TrailItem(location: String, trailName: String, imageUrl: String, onClick: ()
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Icon(Icons.Filled.FavoriteBorder, contentDescription = stringResource(R.string.favorite))
+                Icon(
+                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    contentDescription = stringResource(R.string.favorite),
+                    modifier = Modifier.clickable { onFavoriteClick() }
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
             println("Image URL in BrowseScreen: $imageUrl")
+
             Row {
                 Image(
                     painter = rememberAsyncImagePainter(model = imageUrl),
@@ -190,6 +248,16 @@ fun TrailItem(location: String, trailName: String, imageUrl: String, onClick: ()
     }
 }
 
+@Composable
+fun getLanguageLabel(langCode: String): String {
+    return when (langCode) {
+        "en" -> stringResource(R.string.lang_en)
+        "pt" -> stringResource(R.string.lang_pt)
+        "es" -> stringResource(R.string.lang_es)
+        else -> stringResource(R.string.lang_en) // fallback
+    }
+}
+
 fun updateLocale(context: Context, languageCode: String) {
     val locale = Locale(languageCode)
     Locale.setDefault(locale)
@@ -197,9 +265,7 @@ fun updateLocale(context: Context, languageCode: String) {
     config.setLocale(locale)
     context.createConfigurationContext(config)
     context.resources.updateConfiguration(config, context.resources.displayMetrics)
-}
-
-
+    
 @Composable
 fun LogoutButton(navController: NavController, viewModel: LoginViewModel) {
     Button(
@@ -212,4 +278,3 @@ fun LogoutButton(navController: NavController, viewModel: LoginViewModel) {
     ) {
         Text("Logout")
     }
-}
