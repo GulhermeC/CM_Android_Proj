@@ -1,12 +1,13 @@
 package com.example.gps
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -16,9 +17,36 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.example.gps.data.Trail
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun TrailDetailsScreen(trail: Trail,navController: NavController) {
+
+    var waypoints by remember { mutableStateOf<List<Pair<Double, Double>>>(emptyList()) }
+    val firestore = FirebaseFirestore.getInstance()
+
+    // Fetch the waypoints from Firestore, if we have a valid doc ID
+    LaunchedEffect(trail.id) {
+        if (trail.id.isNotEmpty()) {
+            firestore.collection("trails")
+                .document(trail.id)
+                .collection("waypoints")
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    val fetchedWaypoints = snapshot.mapNotNull { doc ->
+                        val lat = doc.getDouble("latitude")
+                        val lng = doc.getDouble("longitude")
+                        if (lat != null && lng != null) {
+                            Pair(lat, lng)
+                        } else null
+                    }
+                    waypoints = fetchedWaypoints
+                }
+                .addOnFailureListener { e ->
+                    Log.e("TrailDetailsScreen", "Failed to fetch waypoints: ${e.message}")
+                }
+        }
+    }
 
     IconButton(onClick = { navController.popBackStack()  }) {
         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -80,6 +108,17 @@ fun TrailDetailsScreen(trail: Trail,navController: NavController) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Choose Trail")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (waypoints.isNotEmpty()) {
+            Text(
+                text = "Waypoints:",
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            MiniMap(waypoints)
         }
     }
 }

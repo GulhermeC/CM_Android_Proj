@@ -1,6 +1,7 @@
 package com.example.gps
 
 import android.content.Context
+import android.os.Parcelable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,7 +26,9 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.rememberAsyncImagePainter
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.gps.R
+import com.example.gps.data.Trail
 import java.util.Locale
+import kotlinx.parcelize.Parcelize
 
 @Composable
 fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
@@ -53,6 +56,7 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
                     val difficulty = document.getString("difficulty")
                     if (name != null && location != null && imageUrl != null) {
                         Trail(
+                            id = document.id,
                             name = name,
                             location = location,
                             difficulty = difficulty ?: "Unknown",
@@ -245,13 +249,3 @@ fun updateLocale(context: Context, languageCode: String) {
     context.createConfigurationContext(config)
     context.resources.updateConfiguration(config, context.resources.displayMetrics)
 }
-
-// Data class for Trails
-data class Trail(
-    val id: String = "",
-    val name: String,
-    val location: String,
-    val difficulty: String,
-    val imageUrl: String,
-    var isFavorite: Boolean = false
-)
