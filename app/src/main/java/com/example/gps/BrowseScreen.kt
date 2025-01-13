@@ -23,6 +23,7 @@ import androidx.compose.foundation.clickable
 import coil3.compose.rememberAsyncImagePainter
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.ui.res.stringResource
+import com.example.gps.data.Trail
 
 @Composable
 fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
@@ -66,7 +67,7 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
             value = searchQuery,
             onValueChange = { searchQuery = it },
             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search Icon") },
-            placeholder = { Text(stringResource(R.string.search))  },
+            placeholder = { Text("Search") },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -77,7 +78,7 @@ fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         } else if (errorMessage != null) {
             Text(
-                text = "${stringResource(R.string.error)} $errorMessage",
+                text = "Error: ${errorMessage}",
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
@@ -122,11 +123,11 @@ fun TrailItem(location: String, trailName: String, imageUrl: String, onClick: ()
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Icon(Icons.Filled.FavoriteBorder, contentDescription = stringResource(R.string.favorite))
+                Icon(Icons.Filled.FavoriteBorder, contentDescription = "Favorite")
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-            //println("Image URL in BrowseScreen: $imageUrl")
+            println("Image URL in BrowseScreen: $imageUrl")
             Row {
                 Image(
                     painter = rememberAsyncImagePainter(model = imageUrl),
