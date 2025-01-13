@@ -24,6 +24,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gps.RegisterActivity
+import androidx.compose.ui.res.stringResource
+import com.example.gps.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,14 +44,14 @@ fun LoginScreen(onLoginAttempt: (String, String) -> Unit, context: Context) {
             OutlinedTextField(
                 value = username.value,
                 onValueChange = { username.value = it },
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email)) },
                 singleLine = true
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = password.value,
                 onValueChange = { password.value = it },
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.password)) },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
@@ -63,10 +65,11 @@ fun LoginScreen(onLoginAttempt: (String, String) -> Unit, context: Context) {
                     // Simulate successful login
                     onLoginAttempt(emailInput, passwordInput)
                 } else {
-                    Toast.makeText(context, "Please enter username and password", Toast.LENGTH_SHORT).show()
+                    val enterUsernamePassword = context.getString(R.string.enter_username_password)
+                    Toast.makeText(context, enterUsernamePassword, Toast.LENGTH_SHORT).show()
                 }
             }) {
-                Text("Login")
+                Text(stringResource(R.string.login))
             }
             // Spacer to separate buttons
             Spacer(modifier = Modifier.height(8.dp))
@@ -76,7 +79,7 @@ fun LoginScreen(onLoginAttempt: (String, String) -> Unit, context: Context) {
                 val intent = Intent(context, RegisterActivity::class.java)
                 context.startActivity(intent)
             }) {
-                Text("Register")
+                Text(stringResource(R.string.register))
             }
         }
     }

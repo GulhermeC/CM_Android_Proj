@@ -31,7 +31,7 @@ import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
-
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun TrailCreationScreen(navController: NavController) {
@@ -64,7 +64,7 @@ fun TrailCreationScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Create a Trail",
+            text = stringResource(R.string.create_trail),
             style = MaterialTheme.typography.titleLarge
         )
 
@@ -74,7 +74,7 @@ fun TrailCreationScreen(navController: NavController) {
         OutlinedTextField(
             value = trailName,
             onValueChange = { trailName = it },
-            label = { Text("Name of the trail") },
+            label = { Text(stringResource(R.string.name_of_trail)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -85,7 +85,7 @@ fun TrailCreationScreen(navController: NavController) {
         OutlinedTextField(
             value = location,
             onValueChange = { location = it },
-            label = { Text("Location") },
+            label = { Text(stringResource(R.string.location))},
             singleLine = true,
             trailingIcon = {
                 Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Location Icon")
@@ -96,22 +96,26 @@ fun TrailCreationScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Difficulty Selection
-        Text(text = "Difficulty", fontSize = 18.sp, color = Color.Black)
+        Text(
+            text = stringResource(R.string.difficulty),
+            fontSize = 18.sp,
+            color = Color.Black
+        )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            DifficultyRadioButton(label = "Easy", selectedDifficulty = difficulty) { difficulty = it }
-            DifficultyRadioButton(label = "Medium", selectedDifficulty = difficulty) { difficulty = it }
-            DifficultyRadioButton(label = "Hard", selectedDifficulty = difficulty) { difficulty = it }
+            DifficultyRadioButton(label = stringResource(R.string.easy), selectedDifficulty = difficulty) { difficulty = it }
+            DifficultyRadioButton(label = stringResource(R.string.medium), selectedDifficulty = difficulty) { difficulty = it }
+            DifficultyRadioButton(label = stringResource(R.string.hard), selectedDifficulty = difficulty) { difficulty = it }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Image Picker
         Button(onClick = { imagePickerLauncher.launch("image/*") }) {
-            Text("Select Image")
+            Text(stringResource(R.string.select_image))
         }
 
         // Display Selected Image
@@ -119,7 +123,7 @@ fun TrailCreationScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(12.dp))
             Image(
                 painter = rememberAsyncImagePainter(model = uri),
-                contentDescription = "Selected Image",
+                contentDescription = null,
                 modifier = Modifier
                     .size(200.dp)
                     .padding(8.dp)
@@ -130,13 +134,17 @@ fun TrailCreationScreen(navController: NavController) {
 
         // Button to open Waypoint Selection Screen
         Button(onClick = { navController.navigate("waypointSelection") }) {
-            Text("Select Waypoints")
+            Text(stringResource(R.string.select_waypoints))
         }
 
 
         // **Mini Map to Show Selected Waypoints**
         if (selectedWaypoints.isNotEmpty()) {
-            Text("Waypoint Preview:", fontSize = 16.sp, color = Color.Black)
+            Text(
+                text = stringResource(R.string.waypoint_preview),
+                fontSize = 16.sp,
+                color = Color.Black
+            )
             MiniMap(selectedWaypoints)
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -160,20 +168,22 @@ fun TrailCreationScreen(navController: NavController) {
                         context
                     ) { success ->
                         isSaving = false
-                        if (success) {
-                            Toast.makeText(context, "Trail saved successfully!", Toast.LENGTH_SHORT).show()
+                        val message = if (success) {
+                            context.getString(R.string.trail_saved_success)
                         } else {
-                            Toast.makeText(context, "Failed to save trail", Toast.LENGTH_SHORT).show()
+                            context.getString(R.string.trail_saved_failed)
                         }
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                    val fillAllFieldsMessage = context.getString(R.string.fill_all_fields)
+                    Toast.makeText(context, fillAllFieldsMessage, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = !isSaving
         ) {
-            Text(if (isSaving) "Saving..." else "Save Trail")
+            Text(if (isSaving) stringResource(R.string.saving) else stringResource(R.string.save_trail))
         }
     }
 }

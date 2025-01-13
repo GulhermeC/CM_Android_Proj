@@ -37,7 +37,7 @@ class LoginActivity : ComponentActivity() {
     private fun signInWithFirebase(email: String, pass: String) {
         if (email.isBlank() || pass.isBlank()) {
             // Just a guard check
-            Toast.makeText(this, "Email or password cannot be blank", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.email_or_password_blank), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -50,7 +50,7 @@ class LoginActivity : ComponentActivity() {
                     finish()
                 } else {
                     // Login failed -> show error
-                    Toast.makeText(this, "Wrong email or password", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.wrong_email_or_password), Toast.LENGTH_SHORT).show()
                 }
             }
     }

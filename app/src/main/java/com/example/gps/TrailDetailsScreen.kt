@@ -23,7 +23,7 @@ fun TrailDetailsScreen(trail: Trail) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Trail Image
-        println("Image URL in TrailDetailsScreen: ${trail.imageUrl}")
+        //println("Image URL in TrailDetailsScreen: ${trail.imageUrl}")
         Image(
             painter = rememberAsyncImagePainter(model = trail.imageUrl),
             contentDescription = "Trail Image",

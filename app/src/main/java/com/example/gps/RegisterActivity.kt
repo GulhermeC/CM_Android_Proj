@@ -10,6 +10,7 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.auth.ktx.auth
+import androidx.compose.ui.res.stringResource
 
 class RegisterActivity : ComponentActivity() {
 
@@ -33,7 +34,7 @@ class RegisterActivity : ComponentActivity() {
 
     private fun registerUser(email: String, password: String) {
         if (email.isBlank() || password.isBlank()) {
-            Toast.makeText(this, "Email or password cannot be blank", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.email_or_password_blank), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -41,14 +42,14 @@ class RegisterActivity : ComponentActivity() {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     // Registration succeeded
-                    Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.registration_successful), Toast.LENGTH_SHORT).show()
                     // Navigate to LoginActivity
                     val intent = Intent(this, LoginActivity::class.java)
                     startActivity(intent)
                     finish()
                 } else {
                     // Registration failed
-                    val errorMessage = task.exception?.message ?: "Registration failed"
+                    val errorMessage = task.exception?.message ?: getString(R.string.registration_failed)
                     Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
                 }
             }
