@@ -55,6 +55,7 @@ import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 class MainActivity : ComponentActivity() {
 
@@ -149,8 +150,16 @@ fun TrailApp(navController: NavHostController,viewModel: LoginViewModel = viewMo
         }
     }
 
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+
     Scaffold(
-        bottomBar = { BottomNavBar(navController) }
+        bottomBar = {
+            // Conditionally display the BottomNavBar
+            if (currentRoute !in listOf("login", "register")) {
+                BottomNavBar(navController)
+            }
+        }
     ) { innerPadding ->
         NavHostContainer(navController, Modifier.padding(innerPadding), startDestination!!, viewModel)
     }
