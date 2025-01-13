@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,8 +39,15 @@ import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.locationcomponent.location
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.example.gps.R
 import kotlinx.coroutines.delay
+import kotlin.math.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.style.TextAlign
 
 @SuppressLint("ClickableViewAccessibility")
 @Composable
@@ -52,7 +61,7 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
     // Waypoints state
     val waypointList = remember { mutableStateListOf<Pair<Double, Double>>() }
     var clearedWaypoints by remember { mutableStateOf(setOf<Pair<Double, Double>>()) }
-    val userLocation = remember { mutableStateOf<Pair<Double, Double>?>(null) }
+    var userLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
 
 
     var pointAnnotationManager by remember { mutableStateOf<PointAnnotationManager?>(null) }
@@ -64,7 +73,11 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
         onResult = { isGranted ->
             hasLocationPermission = isGranted
             if (!isGranted) {
-                Toast.makeText(context, context.getString(R.string.permission_denied), Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.permission_denied),
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     )
@@ -110,8 +123,12 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
                         pulsingEnabled = true
                     }
 
-                    // Center camera on user location
+                    // Store User Location and Move Camera in a Single Listener
                     addOnIndicatorPositionChangedListener { point ->
+                        userLocation = Pair(point.latitude(), point.longitude()) //Store location
+                        println("User Location Updated: $userLocation")
+
+                        // Center camera on user location
                         mapboxMap.setCamera(
                             CameraOptions.Builder()
                                 .center(point)
@@ -124,27 +141,53 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
                 // Initialize the annotation manager for waypoints
                 pointAnnotationManager = mapView.annotations.createPointAnnotationManager()
                 // Add waypoints to the map
+                // 🔹 Add waypoints to the map
                 waypointList.forEach { (lat, lng) ->
                     val point = Point.fromLngLat(lng, lat)
+                    val isCleared = clearedWaypoints.contains(Pair(lat, lng)) // Check if cleared
+                    val iconColor =
+                        if (isCleared) "#00FF00" else "#FF5733" // Green for cleared, Red otherwise
+
                     val pointAnnotationOptions = PointAnnotationOptions()
                         .withPoint(point)
-                        .withIconSize(3.5) // 🔹 Increased size
+                        .withIconSize(3.5)
                         .withIconImage("marker-15")
                         .withTextField("Waypoint")
-                        .withTextColor("#FF5733") // 🔹 Distinct color
+                        .withTextColor(iconColor) // Change color dynamically
                         .withTextSize(12.0)
+
                     pointAnnotationManager?.create(pointAnnotationOptions)
                 }
             }
         }
     }
 
-    // 🔹 Improved UI Layout
+    // 🔹 Check if User is Near Any Waypoint
+    LaunchedEffect(userLocation) {
+        userLocation?.let { (userLat, userLng) ->
+            waypointList.filterNot { clearedWaypoints.contains(it) } // Only check uncleared waypoints
+                .forEach { (waypointLat, waypointLng) ->
+                    val distance = calculateDistance(userLat, userLng, waypointLat, waypointLng)
+                    if (distance < 1) { // 🔹 10 meters threshold
+                        clearedWaypoints = clearedWaypoints + Pair(waypointLat, waypointLng)
+                    }
+                }
+
+            // 🔹 Stop timer when all waypoints are reached
+            if (clearedWaypoints.size == waypointList.size && isRunning) {
+                isRunning = false
+                println("✅ All waypoints cleared! Timer stopped.")
+            }
+        }
+    }
+
+// 🔹 Improved UI Layout with Soft Colors
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .background(MaterialTheme.colorScheme.background),
+            .background(Color(0xFFF1F1EB)) // Beige/Nude Background
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // 🔹 Header Section
@@ -155,43 +198,53 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
             horizontalArrangement = Arrangement.Start
         ) {
             IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color(0xFF19731B)
+                ) // Dark Green
             }
             Text(
-                text = "User Trail",
-                style = MaterialTheme.typography.headlineMedium,
+                text = "Trail",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF19731B) // Dark Green
+                ),
                 modifier = Modifier.padding(start = 12.dp)
             )
         }
 
-        // 🔹 Map Section
+        // 🔹 Map Section with Rounded Borders
         Card(
             shape = RoundedCornerShape(12.dp),
             elevation = CardDefaults.cardElevation(6.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(500.dp)
+                .height(400.dp)
         ) {
-            AndroidView(
-                factory = { mapView },
-                modifier = Modifier.fillMaxSize()
-            )
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
+            }
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 🔹 Timer Display
+        // 🔹 Timer Display with Simple Styling
         Text(
-            text = "Elapsed Time: ${formatTime(elapsedTime)}",
-            style = MaterialTheme.typography.titleLarge,
-            color = Color.White,
+            text = formatTime(elapsedTime),
+            style = TextStyle(
+                fontSize = 36.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                fontFamily = FontFamily.Monospace
+            ),
             modifier = Modifier
-                .background(Color.Black.copy(alpha = 0.7f))
-                .padding(8.dp)
+                .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(12.dp)) // Light Gray
+                .padding(12.dp)
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // 🔹 Start Trail Button (Fixing Timer)
+        // 🔹 Start Trail Button with Adjusted Height
         Button(
             onClick = {
                 if (isRunning) {
@@ -201,14 +254,32 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
                     startTime = SystemClock.elapsedRealtime()
                 }
             },
-            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF19731B), // Ensures background is correct
+                contentColor = Color.White // Ensures text is visible
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 32.dp)
-                .height(50.dp),
-            shape = RoundedCornerShape(8.dp)
+                .height(60.dp), // 🔹 Increased height for better text fitting
+            shape = RoundedCornerShape(12.dp),
+            contentPadding = PaddingValues(vertical = 12.dp) // 🔹 Ensures internal padding does not shrink text
         ) {
-            Text(if (isRunning) "Stop Trail" else "Start Trail", style = MaterialTheme.typography.bodyLarge)
+            Icon(
+                if (isRunning) Icons.Filled.Check else Icons.Filled.PlayArrow,
+                contentDescription = "Start/Stop Trail",
+                tint = Color.White
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = if (isRunning) "Stop Trail" else "Start Trail",
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                ),
+                modifier = Modifier.wrapContentSize(), // Prevents text from being cropped
+                textAlign = TextAlign.Center // Ensures text is well-centered
+            )
         }
 
         // 🔹 Timer Update (Updates every second when running)
@@ -221,6 +292,22 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
             }
         }
     }
+}
+
+// 🔹 Function to Calculate Distance Between Two GPS Coordinates
+private fun calculateDistance(
+    lat1: Double, lon1: Double, lat2: Double, lon2: Double
+): Double {
+    val radius = 6371e3 // Earth's radius in meters
+    val dLat = Math.toRadians(lat2 - lat1)
+    val dLon = Math.toRadians(lon2 - lon1)
+
+    val a = sin(dLat / 2) * sin(dLat / 2) +
+            cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+            sin(dLon / 2) * sin(dLon / 2)
+    val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    return radius * c // Distance in meters
 }
 
 // Format time in HH:mm:ss

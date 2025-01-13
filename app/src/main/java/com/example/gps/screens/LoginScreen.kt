@@ -5,13 +5,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -29,9 +33,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.Color
 import com.example.gps.viewmodels.LoginViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import com.example.gps.R
 
 
@@ -54,31 +60,44 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel) {
     }
 
 
-    Surface(modifier = Modifier.fillMaxSize()) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFE6F2EF) // ✅ Soft pastel background
+    ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(24.dp) // ✅ More padding for better spacing
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // 🔹 Email Field
             OutlinedTextField(
                 value = username.value,
                 onValueChange = { username.value = it },
                 label = { Text(stringResource(R.string.email)) },
-                singleLine = true
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners for modern feel
+                modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(8.dp))
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 🔹 Password Field
             OutlinedTextField(
                 value = password.value,
                 onValueChange = { password.value = it },
                 label = { Text(stringResource(R.string.password)) },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners
+                modifier = Modifier.fillMaxWidth()
             )
+
             Spacer(modifier = Modifier.height(16.dp))
 
+            // 🔹 Remember Me Row
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -90,52 +109,79 @@ fun LoginScreen(navController: NavController,viewModel: LoginViewModel) {
                     )
                     .padding(8.dp)
             ) {
-                Checkbox(checked = rememberMe.value, onCheckedChange = { rememberMe.value = it })
+                Checkbox(
+                    checked = rememberMe.value,
+                    onCheckedChange = { rememberMe.value = it },
+                    colors = CheckboxDefaults.colors(checkedColor = Color(0xFF19731B)) // ✅ Dark Green Checkbox
+                )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Remember Me")
+                Text("Remember Me", color = Color.Black)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = {
-                val usernameInput = username.value.trim()
-                val passwordInput = password.value.trim()
-                // Here you would add your login logic
-                if (usernameInput.isNotBlank() && passwordInput.isNotBlank()) {
-                    loading.value = true
-                    // Simulate successful login
-                    auth.signInWithEmailAndPassword(usernameInput, passwordInput)
-                        .addOnCompleteListener { task ->
-                            loading.value = false
-                            if (task.isSuccessful) {
-                                coroutineScope.launch {
-                                    viewModel.saveUser(usernameInput, rememberMe.value) // Save user data
-                                }
-                                navController.navigate("create"){
-                                    popUpTo("login") { inclusive = true }
-                                }
-                            } else {
-                                Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
+            // 🔹 Login Button
+            Button(
+                onClick = {
+                    val usernameInput = username.value.trim()
+                    val passwordInput = password.value.trim()
+                    if (usernameInput.isNotBlank() && passwordInput.isNotBlank()) {
+                        loading.value = true
+                        auth.signInWithEmailAndPassword(usernameInput, passwordInput)
+                            .addOnCompleteListener { task ->
+                                loading.value = false
+                                if (task.isSuccessful) {
+                                    coroutineScope.launch {
+                                        viewModel.saveUser(usernameInput, rememberMe.value)
+                                    }
+                                    navController.navigate("create") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                } else {
+                                    Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT)
+                                        .show()
                                 }
                             }
-                } else {
-                    val enterUsernamePassword = context.getString(R.string.enter_username_password)
-                    Toast.makeText(context, enterUsernamePassword, Toast.LENGTH_SHORT).show()
-                }
-            },
-            enabled = !loading.value
-            ){
-                Text(stringResource(R.string.login))
+                    } else {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.enter_username_password),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                enabled = !loading.value,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B)), // ✅ Dark Green Button
+                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text(
+                    stringResource(R.string.login),
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
             }
-            // Spacer to separate buttons
-            Spacer(modifier = Modifier.height(8.dp))
 
-            // Register Button
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 🔹 Register Button
             Button(
                 onClick = { navController.navigate("register") },
-                enabled = !loading.value
+                enabled = !loading.value,
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                shape = RoundedCornerShape(12.dp), // ✅ Rounded corners
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp) // ✅ Soft shadow
             ) {
-                Text(stringResource(R.string.register))
+                Text(
+                    stringResource(R.string.register),
+                    color = Color(0xFF19731B),
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }

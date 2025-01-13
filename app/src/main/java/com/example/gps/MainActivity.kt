@@ -55,6 +55,8 @@ import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.example.gps.screens.FavoritesScreen
+import com.example.gps.ui.theme.GpsTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -83,7 +85,9 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val viewModel: LoginViewModel = viewModel()
 
-            TrailApp(navController,viewModel)
+            GpsTheme {
+                TrailApp(navController, viewModel)
+            }
         }
 
     }

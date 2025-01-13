@@ -1,6 +1,7 @@
-package com.example.gps
+package com.example.gps.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -20,7 +22,10 @@ import com.example.gps.data.Trail
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import com.example.gps.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,25 +106,39 @@ fun FavoritesScreen(navController: androidx.navigation.NavController) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.favorites_title)) })
+            TopAppBar(
+                title = { Text(stringResource(R.string.favorites_title), color = Color.White) },
+                colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color(0xFF19731B)) // ✅ Dark Green Top Bar
+            )
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .background(Color(0xFF386C5F)) // ✅ Soft pastel background
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                CircularProgressIndicator(color = Color.Gray)
             } else if (errorMessage != null) {
                 Text(
                     text = stringResource(R.string.error_generic, errorMessage.orEmpty()),
                     color = Color.Red,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    fontWeight = FontWeight.Bold
                 )
             } else if (favTrails.isEmpty()) {
                 Text(
                     text = stringResource(R.string.no_favorites),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Gray
                 )
             } else {
-                LazyColumn {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp) // ✅ More space between cards
+                ) {
                     items(favTrails) { trail ->
                         FavoriteTrailItem(trail = trail) {
                             navController.currentBackStackEntry?.savedStateHandle?.set("selectedTrail", trail)
@@ -135,51 +154,86 @@ fun FavoritesScreen(navController: androidx.navigation.NavController) {
 @Composable
 fun FavoriteTrailItem(trail: Trail, onClick: () -> Unit) {
     Card(
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(16.dp), // ✅ Rounded edges for consistency
+        colors = CardDefaults.cardColors(containerColor = Color.White), // ✅ Clean white background
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
-            .clickable { onClick() }, // Handle click
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .clickable { onClick() }
+            .shadow(4.dp, RoundedCornerShape(16.dp)), // ✅ Light shadow for depth
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = trail.location,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Icon(
-                    imageVector = Icons.Filled.Favorite,
-                    contentDescription = stringResource(R.string.favorite_icon),
-                    tint = Color.Red
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // ✅ Trail Image / Placeholder
+            if (trail.imageUrl.isBlank()) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(Color.LightGray, shape = RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = "Default Trail Icon",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            } else {
                 Image(
                     painter = rememberAsyncImagePainter(model = trail.imageUrl),
                     contentDescription = stringResource(R.string.trail_image),
                     modifier = Modifier
                         .size(64.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Text(
-                    text = trail.name,
-                    fontSize = 16.sp,
-                    color = Color.Black
+                        .clip(RoundedCornerShape(12.dp))
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // ✅ Text Section
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                // 🔹 Trail Name (Bold)
+                Text(
+                    text = trail.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // 🔹 Location with Pin Icon
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = "Location Icon",
+                        tint = Color(0xFF19731B), // ✅ Dark Green
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = trail.location,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF19731B)
+                    )
+                }
+            }
+
+            // ✅ Favorite Heart Icon (Right Aligned)
+            Icon(
+                imageVector = Icons.Filled.Favorite,
+                contentDescription = stringResource(R.string.favorite_icon),
+                tint = Color.Red,
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 }
