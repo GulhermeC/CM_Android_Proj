@@ -1,8 +1,9 @@
-package com.example.gps
+package com.example.gps.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gps.managers.DataStoreManager
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch

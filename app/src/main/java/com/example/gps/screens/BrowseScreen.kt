@@ -1,7 +1,6 @@
-package com.example.gps
+package com.example.gps.screens
 
 import android.content.Context
-import android.os.Parcelable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,13 +24,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.rememberAsyncImagePainter
 import com.google.firebase.firestore.FirebaseFirestore
-import com.example.gps.R
 import com.example.gps.data.Trail
 import androidx.navigation.NavController
 import java.util.Locale
-import kotlinx.parcelize.Parcelize
 import android.app.Activity
 import com.google.firebase.auth.FirebaseAuth
+import com.example.gps.R
+import com.example.gps.viewmodels.LoginViewModel
 
 @Composable
 fun BrowseScreen(onTrailClick: (Trail) -> Unit) {
