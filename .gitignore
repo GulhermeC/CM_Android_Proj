@@ -28,3 +28,5 @@ local.properties
 *.swp
 *.swo
 .DS_Store
+/gps.zip
+/key.jks
