@@ -84,6 +84,7 @@ fun WaypointSelectionScreen(navController: NavHostController) {
     var waypointCounter = remember { mutableIntStateOf(1) }
     var pointAnnotationManager by remember { mutableStateOf<PointAnnotationManager?>(null) }
     var hasLocationPermission by remember { mutableStateOf(checkLocationPermission(context)) }
+    var isFirstLocationUpdate by remember { mutableStateOf(true) } // Boolean flag
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -130,12 +131,14 @@ fun WaypointSelectionScreen(navController: NavHostController) {
 
                     //Center camera on user location
                     addOnIndicatorPositionChangedListener { point ->
-                        mapboxMap.setCamera(
-                            CameraOptions.Builder()
-                                .center(point)
-                                .zoom(15.0)
-                                .build()
-                        )
+                        if (isFirstLocationUpdate) { // Only center once
+                            mapboxMap.setCamera(
+                                CameraOptions.Builder()
+                                    .center(point)
+                                    .zoom(15.0)
+                                    .build()
+                            )
+                        }
                     }
                 }
                 // Initialize the annotation manager for waypoints

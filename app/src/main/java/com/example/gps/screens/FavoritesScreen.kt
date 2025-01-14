@@ -251,7 +251,8 @@ fun LogoutButton(navController: NavController, viewModel: LoginViewModel) {
             navController.navigate("login") {
                 popUpTo("create") { inclusive = true } //  Remove all previous screens
             }
-        }
+        },
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF19731B)), //  Dark Green Button
     ) {
         Text("Logout")
     }

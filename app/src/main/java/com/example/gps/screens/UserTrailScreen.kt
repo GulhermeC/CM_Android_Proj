@@ -63,6 +63,8 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
     val waypointList = remember { mutableStateListOf<Pair<Double, Double>>() }
     var clearedWaypoints by remember { mutableStateOf(setOf<Pair<Double, Double>>()) }
     var userLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
+    var isFirstLocationUpdate by remember { mutableStateOf(true) } // Boolean flag
+
 
 
     var pointAnnotationManager by remember { mutableStateOf<PointAnnotationManager?>(null) }
@@ -139,12 +141,15 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
                         println("User Location Updated: $userLocation")
 
                         // Center camera on user location
-                        mapboxMap.setCamera(
-                            CameraOptions.Builder()
-                                .center(point)
-                                .zoom(15.0)
-                                .build()
-                        )
+                        if (isFirstLocationUpdate) { // Only center once
+                            mapboxMap.setCamera(
+                                CameraOptions.Builder()
+                                    .center(point)
+                                    .zoom(15.0)
+                                    .build()
+                            )
+                            isFirstLocationUpdate = false // Prevent future automatic centering
+                        }
                     }
                 }
 
@@ -172,21 +177,39 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
         }
     }
 
-    //  Check if User is Near Any Waypoint
     LaunchedEffect(userLocation) {
         userLocation?.let { (userLat, userLng) ->
-            waypointList.filterNot { clearedWaypoints.contains(it) } // Only check uncleared waypoints
-                .forEach { (waypointLat, waypointLng) ->
-                    val distance = calculateDistance(userLat, userLng, waypointLat, waypointLng)
-                    if (distance < 1) { //  10 meters threshold
-                        clearedWaypoints = clearedWaypoints + Pair(waypointLat, waypointLng)
-                    }
-                }
+            waypointList.forEach { (waypointLat, waypointLng) ->
+                val distance = calculateDistance(userLat, userLng, waypointLat, waypointLng)
 
-            //  Stop timer when all waypoints are reached
+                if (distance < 1) { // 1 meters threshold
+                    clearedWaypoints = clearedWaypoints + Pair(waypointLat, waypointLng)
+                }
+            }
+
+            // Refresh waypoint markers
+            pointAnnotationManager?.deleteAll()
+            waypointList.forEach { (lat, lng) ->
+                val point = Point.fromLngLat(lng, lat)
+                val isCleared = clearedWaypoints.contains(Pair(lat, lng)) // Check if cleared
+
+                val iconImage = if (isCleared) "marker-stroked-15" else "marker-15"
+
+                val pointAnnotationOptions = PointAnnotationOptions()
+                    .withPoint(point)
+                    .withIconSize(3.5)
+                    .withIconImage(iconImage) // Change the marker icon dynamically
+                    .withTextField("Waypoint")
+                    .withTextColor(if (isCleared) "#00FF00" else "#FF5733") // Update the text color
+                    .withTextSize(12.0)
+
+                pointAnnotationManager?.create(pointAnnotationOptions)
+            }
+
+            // Stop the timer if all waypoints are cleared
             if (clearedWaypoints.size == waypointList.size && isRunning) {
                 isRunning = false
-                println(" All waypoints cleared! Timer stopped.")
+                println("All waypoints cleared! Timer stopped.")
             }
         }
     }
