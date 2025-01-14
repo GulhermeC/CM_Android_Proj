@@ -48,6 +48,7 @@ import kotlinx.coroutines.delay
 import kotlin.math.*
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextAlign
+import com.mapbox.maps.plugin.gestures.gestures
 
 @SuppressLint("ClickableViewAccessibility")
 @Composable
@@ -122,6 +123,15 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
                         enabled = true
                         pulsingEnabled = true
                     }
+
+                    // Enable zoom controls
+                    val gesturesPlugin = mapView.gestures
+                    gesturesPlugin.updateSettings {
+                        pinchToZoomEnabled = true
+                        doubleTapToZoomInEnabled = true
+                        quickZoomEnabled = true
+                    }
+
 
                     // Store User Location and Move Camera in a Single Listener
                     addOnIndicatorPositionChangedListener { point ->

@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.gps.R
+import com.mapbox.maps.plugin.gestures.gestures
 
 @SuppressLint("Lifecycle")
 @Composable
@@ -117,6 +118,14 @@ fun WaypointSelectionScreen(navController: NavHostController) {
                     updateSettings {
                         enabled = true
                         pulsingEnabled = true
+                    }
+
+                    // Enable zoom controls
+                    val gesturesPlugin = mapView.gestures
+                    gesturesPlugin.updateSettings {
+                        pinchToZoomEnabled = true
+                        doubleTapToZoomInEnabled = true
+                        quickZoomEnabled = true
                     }
 
                     //Center camera on user location
