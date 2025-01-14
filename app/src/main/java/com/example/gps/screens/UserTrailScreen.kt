@@ -124,7 +124,7 @@ fun UserTrailScreen(navController: NavHostController , trailId: String,waypoints
                         pulsingEnabled = true
                     }
 
-                    // Enable zoom controls
+                    // Enable zoom controlsd
                     val gesturesPlugin = mapView.gestures
                     gesturesPlugin.updateSettings {
                         pinchToZoomEnabled = true
